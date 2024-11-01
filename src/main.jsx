@@ -1,10 +1,10 @@
 // import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from '~/App.jsx'
+import App from './App'
 import CssBaseline from '@mui/material/CssBaseline'
 import GlobalStyles from '@mui/material/GlobalStyles'
 import { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles'
-import theme from '~/theme'
+import theme from './theme'
 
 // Cấu hình react-toastify
 import { ToastContainer } from 'react-toastify'
@@ -15,7 +15,7 @@ import { ConfirmProvider } from 'material-ui-confirm'
 
 // Cấu hình Redux Store
 import { Provider } from 'react-redux'
-import { store } from '~/redux/store'
+import { store } from './redux/store'
 
 // Cấu hình react-router-dom với BrowserRouter
 import { BrowserRouter } from 'react-router-dom'
@@ -26,7 +26,7 @@ import { persistStore } from 'redux-persist'
 const persistor = persistStore(store)
 
 // Giải pháp Inject store: là kỹ thuật khi cần sử dụng biến redux store ở các file ngoài phạm vi react component
-import { injectStore } from '~/utils/authorizeAxios'
+import { injectStore } from './utils/authorizeAxios'
 injectStore(store)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
