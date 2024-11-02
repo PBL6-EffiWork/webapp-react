@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box'
-import Card from './Card/Card'
+import Card from '../Card/Card'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import React from 'react';
 
 interface Card {
   _id: string;
@@ -42,4 +43,4 @@ function ListCards({ cards }: ListCardsProps) {
   )
 }
 
-export default ListCards
+export default React.memo(ListCards)

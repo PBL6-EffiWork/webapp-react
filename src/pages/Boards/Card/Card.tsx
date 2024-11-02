@@ -10,8 +10,9 @@ import Typography from '@mui/material/Typography'
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { updateCurrentActiveCard, showModalActiveCard } from '../../../../../../../redux/activeCard/activeCardSlice'
-import { useAppDispatch } from '../../../../../../../hook/useAppDispatch'
+import { updateCurrentActiveCard, showModalActiveCard } from '../../../redux/activeCard/activeCardSlice'
+import { useAppDispatch } from '../../../hook/useAppDispatch'
+import React from 'react'
 
 interface CardProps {
   card: {
@@ -68,7 +69,7 @@ function Card({ card }: CardProps) {
         // height: card?.FE_PlaceholderCard ? '0px' : 'unset'
       }}
     >
-      {card?.cover && <CardMedia sx={{ height: 140 }} image={card?.cover} /> }
+      {card?.cover && <CardMedia sx={{ height: 140, borderRadius: 1 }} image={card?.cover} /> }
       <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
         <Typography>{card?.title}</Typography>
       </CardContent>
@@ -89,4 +90,4 @@ function Card({ card }: CardProps) {
   )
 }
 
-export default Card
+export default React.memo(Card)

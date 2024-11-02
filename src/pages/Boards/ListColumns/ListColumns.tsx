@@ -2,21 +2,22 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import Box from '@mui/material/Box'
-import Column from './Column/Column'
+import Column from '../Column/Column'
 import Button from '@mui/material/Button'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
-import { createNewColumnAPI } from '../../../../apis'
-import { generatePlaceholderCard } from '../../../../utils/formatters'
+import { createNewColumnAPI } from '../../../apis'
+import { generatePlaceholderCard } from '../../../utils/formatters'
 import {
   updateCurrentActiveBoard,
   selectCurrentActiveBoard
-} from '../../../../redux/activeBoard/activeBoardSlice'
+} from '../../../redux/activeBoard/activeBoardSlice'
 import { useSelector } from 'react-redux'
 import { cloneDeep } from 'lodash'
-import { useAppDispatch } from '../../../../hook/useAppDispatch'
+import { useAppDispatch } from '../../../hook/useAppDispatch'
+import React from 'react'
 
 interface Column {
   [key: string]: any
@@ -114,7 +115,7 @@ function ListColumns({ columns }: ListColumnsProps) {
             mx: 2,
             borderRadius: '6px',
             height: 'fit-content',
-            bgcolor: '#ffffff3d'
+            bgcolor: '#1bafff'
           }}>
             <Button
               startIcon={<NoteAddIcon />}
@@ -136,7 +137,7 @@ function ListColumns({ columns }: ListColumnsProps) {
             p: 1,
             borderRadius: '6px',
             height: 'fit-content',
-            bgcolor: '#ffffff3d',
+            bgcolor: '#1bafff',
             display: 'flex',
             flexDirection: 'column',
             gap: 1
@@ -189,4 +190,4 @@ function ListColumns({ columns }: ListColumnsProps) {
   )
 }
 
-export default ListColumns
+export default React.memo(ListColumns)

@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box'
-import ListColumns from './ListColumns/ListColumns'
+import ListColumns from '../ListColumns/ListColumns'
 
 import {
   DndContext,
@@ -23,8 +23,8 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { cloneDeep, isEmpty } from 'lodash'
 import { generatePlaceholderCard } from '../../../utils/formatters'
 
-import Column from './ListColumns/Column/Column'
-import Card from './ListColumns/Column/ListCards/Card/Card'
+import Column from '../Column/Column'
+import Card from '../Card/Card'
 
 const ACTIVE_DRAG_ITEM_TYPE = {
   COLUMN: 'ACTIVE_DRAG_ITEM_TYPE_COLUMN',
@@ -385,10 +385,15 @@ function BoardContent({
       onDragEnd={handleDragEnd}
     >
       <Box sx={{
-        bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#1976d2'),
-        width: '100%',
+        bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#ffffff'),
+        // width: '100%',
         height: (theme) => theme.trello.boardContentHeight,
-        p: '10px 0'
+        p: '10px 0',
+        overflowX: 'auto', // Cho phép cuộn ngang
+        overflowY: 'hidden', // Ẩn cuộn dọc nếu không cần thiết
+        maxWidth: '100%',
+        whiteSpace: 'nowrap',
+        flexGrow: 1, // Đảm bảo sử dụng hết không gian có sẵn
       }}>
         <ListColumns columns={orderedColumns} />
         <DragOverlay dropAnimation={customDropAnimation}>

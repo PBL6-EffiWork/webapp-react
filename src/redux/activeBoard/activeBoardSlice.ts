@@ -29,13 +29,13 @@ interface Board {
 // Define the structure of the initial state
 interface ActiveBoardState {
   currentActiveBoard: Board | null,
-  error: string | null
+  error: string | undefined
 }
 
 // Initial state
 const initialState: ActiveBoardState = {
   currentActiveBoard: null,
-  error: null
+  error: undefined
 }
 
 // Fetch board details action
@@ -53,8 +53,9 @@ export const activeBoardSlice = createSlice({
   name: 'activeBoard',
   initialState,
   reducers: {
-    updateCurrentActiveBoard: (state, action: PayloadAction<Board>) => {
+    updateCurrentActiveBoard: (state, action: PayloadAction<Board | null>) => {
       state.currentActiveBoard = action.payload
+      state.error = undefined
     },
     updateCardInBoard: (state, action: PayloadAction<Card>) => {
       const incomingCard = action.payload
@@ -86,11 +87,15 @@ export const activeBoardSlice = createSlice({
       })
 
       state.currentActiveBoard = board
+      state.error = undefined
     }),
     builder.addCase(fetchBoardDetailsAPI.rejected, (state, action) => {
       console.log('fetchBoardDetailsAPI rejected', action);
       state.currentActiveBoard = null;
       state.error = 'Failed to fetch board details';
+    }),
+    builder.addCase('root/clearError', (state) => {
+      state.error = undefined;
     })
   }
 })

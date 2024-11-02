@@ -23,10 +23,12 @@ import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined'
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
 import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
+import { addDays, format } from "date-fns"
+import { DateRange } from "react-day-picker"
 
-import ToggleFocusInput from '../../../components/Form/ToggleFocusInput'
-import VisuallyHiddenInput from '../../../components/Form/VisuallyHiddenInput'
-import { singleFileValidator } from '../../../utils/validators'
+import ToggleFocusInput from '@/components/Form/ToggleFocusInput'
+import VisuallyHiddenInput from '@/components/Form/VisuallyHiddenInput'
+import { singleFileValidator } from '@/utils/validators'
 import { toast } from 'react-toastify'
 import CardUserGroup from './CardUserGroup'
 import CardDescriptionMdEditor from './CardDescriptionMdEditor'
@@ -37,16 +39,22 @@ import {
   selectCurrentActiveCard,
   updateCurrentActiveCard,
   selectIsShowModalActiveCard
-} from '../../../redux/activeCard/activeCardSlice'
-import { updateCardDetailsAPI } from '../../../apis'
-import { updateCardInBoard } from '../../../redux/activeBoard/activeBoardSlice'
-import { selectCurrentUser } from '../../../redux/user/userSlice'
-import { CARD_MEMBER_ACTIONS } from '../../../utils/constants'
+} from '@/redux/activeCard/activeCardSlice'
+import { updateCardDetailsAPI } from '@/apis'
+import { updateCardInBoard } from '@/redux/activeBoard/activeBoardSlice'
+import { selectCurrentUser } from '@/redux/user/userSlice'
+import { CARD_MEMBER_ACTIONS } from '@/utils/constants'
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 import { styled } from '@mui/material/styles'
-import { useAppDispatch } from '../../../hook/useAppDispatch'
+import { useAppDispatch } from '@/hook/useAppDispatch'
+import { DatePicker } from '../DatePicker/DatePicker'
+import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover'
+import { Button } from '../../ui/button'
+import { Calendar } from '../../ui/calendar'
+import { cn } from '../../../lib/utils'
+import React from 'react'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -75,6 +83,10 @@ function ActiveCard() {
   const activeCard = useSelector(selectCurrentActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
   const currentUser = useSelector(selectCurrentUser)
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: new Date(2022, 0, 20),
+    to: addDays(new Date(2022, 0, 20), 20),
+  })
 
   // Không dùng biến State để check đóng mở Modal nữa vì chúng ta sẽ check theo cái biến isShowModalActiveCard trong redux
   // const [isOpen, setIsOpen] = useState(true)
@@ -192,6 +204,14 @@ function ActiveCard() {
               />
             </Box>
 
+            <Box sx={{ mb: 3, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}>
+              <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
+
+              <DatePicker isShowLastDate={true} selectedDate={date} onDateChange={(date) => {
+                setDate(date)
+              }}/>
+            </Box>
+
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <SubjectRoundedIcon />
@@ -272,7 +292,9 @@ function ActiveCard() {
               <SidebarItem><AttachFileOutlinedIcon fontSize="small" />Attachment</SidebarItem>
               <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem>
               <SidebarItem><TaskAltOutlinedIcon fontSize="small" />Checklist</SidebarItem>
-              <SidebarItem><WatchLaterOutlinedIcon fontSize="small" />Dates</SidebarItem>
+              <SidebarItem>
+                <DatePicker />
+              </SidebarItem>
               <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>
             </Stack>
 

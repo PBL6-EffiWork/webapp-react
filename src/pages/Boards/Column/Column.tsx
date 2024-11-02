@@ -16,21 +16,22 @@ import Tooltip from '@mui/material/Tooltip'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import AddCardIcon from '@mui/icons-material/AddCard'
 import DragHandleIcon from '@mui/icons-material/DragHandle'
-import ListCards from './ListCards/ListCards'
+import ListCards from '../ListCards/ListCards'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import { useConfirm } from 'material-ui-confirm'
-import { createNewCardAPI, deleteColumnDetailsAPI, updateColumnDetailsAPI } from '../../../../../apis'
+import { createNewCardAPI, deleteColumnDetailsAPI, updateColumnDetailsAPI } from '../../../apis'
 import {
   updateCurrentActiveBoard,
   selectCurrentActiveBoard
-} from '../../../../../redux/activeBoard/activeBoardSlice'
+} from '../../../redux/activeBoard/activeBoardSlice'
 import { useSelector } from 'react-redux'
 import { cloneDeep } from 'lodash'
-import ToggleFocusInput from '../../../../../components/Form/ToggleFocusInput'
-import { useAppDispatch } from '../../../../../hook/useAppDispatch'
+import ToggleFocusInput from '../../../components/Form/ToggleFocusInput'
+import { useAppDispatch } from '../../../hook/useAppDispatch'
+import React from 'react'
 
 interface ColumnProps {
   column: {
@@ -339,4 +340,4 @@ function Column({ column }: ColumnProps) {
   )
 }
 
-export default Column
+export default React.memo(Column)

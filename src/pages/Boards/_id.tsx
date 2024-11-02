@@ -21,12 +21,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import PageLoadingSpinner from '../../components/Loading/PageLoadingSpinner'
 import ActiveCard from '../../components/Modal/ActiveCard/ActiveCard'
 import { useAppDispatch } from '../../hook/useAppDispatch'
+import BoardTools from './BoardTools/BoardTools'
+import { Box } from '@mui/material'
+import React from 'react'
 
 function Board() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  // Không dùng State của component nữa mà chuyển qua dùng State của Redux
-  // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
   const error = useSelector(selectError);
 
@@ -42,7 +43,13 @@ function Board() {
   }, [dispatch, boardId])
 
   useEffect(() => {
-    navigate('/404', { replace: true })
+    if (error){
+      navigate('/404', { replace: true })
+    }
+
+    return () => {
+      // Cleanup
+    }
   }, [error])
 
   /**
@@ -123,6 +130,12 @@ function Board() {
     })
   }
 
+  useEffect(() => {
+    return () => {
+      dispatch(updateCurrentActiveBoard(null))
+    }
+  },[dispatch])
+
   if (!board) {
     console.log('Board is null', board);
     return <PageLoadingSpinner caption="Loading Board..." />
@@ -135,15 +148,18 @@ function Board() {
 
       {/* Các thành phần còn lại của Board Details */}
       <BoardBar board={board} />
-      <BoardContent
-        board={board}
-        // 3 cái trường hợp move dưới đây thì giữ nguyên để code xử lý kéo thả ở phần BoardContent không bị quá dài mất kiểm soát khi đọc code, maintain.
-        moveColumns={moveColumns}
-        moveCardInTheSameColumn={moveCardInTheSameColumn}
-        moveCardToDifferentColumn={moveCardToDifferentColumn}
-      />
+      {/* <BoardTools /> */}
+      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+        <BoardContent
+          board={board}
+          // 3 cái trường hợp move dưới đây thì giữ nguyên để code xử lý kéo thả ở phần BoardContent không bị quá dài mất kiểm soát khi đọc code, maintain.
+          moveColumns={moveColumns}
+          moveCardInTheSameColumn={moveCardInTheSameColumn}
+          moveCardToDifferentColumn={moveCardToDifferentColumn}
+          />
+      </Box>
     </Container>
   )
 }
 
-export default Board
+export default React.memo(Board)

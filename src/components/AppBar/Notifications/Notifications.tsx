@@ -64,6 +64,7 @@ function Notifications() {
     // Tạo một cái function xử lý khi nhận được sự kiện real-time, docs hướng dẫn:
     // https://socket.io/how-to/use-with-react
     const onReceiveNewInvitation = (invitation: any) => {
+      console.log('onReceiveNewInvitation:', invitation);
       // Nếu thằng user đang đăng nhập hiện tại mà chúng ta lưu trong redux chính là thằng invitee trong bản ghi invitation
       if (invitation.inviteeId === currentUser._id) {
         // Bước 1: Thêm bản ghi invitation mới vào trong redux

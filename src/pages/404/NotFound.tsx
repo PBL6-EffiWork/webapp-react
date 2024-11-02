@@ -7,8 +7,14 @@ import SvgIcon from '@mui/material/SvgIcon'
 import { ReactComponent as PlanetSvg } from '../../assets/404/planet.svg'
 import { ReactComponent as AstronautSvg } from '../../assets/404/astronaut.svg'
 import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useAppDispatch } from '../../hook/useAppDispatch'
 
 function NotFound() {
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch({ type: 'root/clearError' });
+  }, []);
   return (
     <Box sx={{
       width: '100vw',
