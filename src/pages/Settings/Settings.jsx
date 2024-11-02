@@ -33,7 +33,6 @@ function Settings() {
 
   return (
     <Container disableGutters maxWidth={false}>
-      <AppBar />
       <TabContext value={activeTab}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <TabList onChange={handleChangeTab}>

@@ -97,7 +97,6 @@ function Boards() {
 
   return (
     <Container disableGutters maxWidth={false}>
-      <AppBar />
       <Box sx={{ paddingX: 2, my: 4 }}>
         <Grid container spacing={2}>
           <Grid xs={12} sm={3}>

@@ -13,19 +13,22 @@ import { cloneDeep } from 'lodash'
 import {
   fetchBoardDetailsAPI,
   updateCurrentActiveBoard,
-  selectCurrentActiveBoard
+  selectCurrentActiveBoard,
+  selectError
 } from '../../redux/activeBoard/activeBoardSlice'
 import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import PageLoadingSpinner from '../../components/Loading/PageLoadingSpinner'
 import ActiveCard from '../../components/Modal/ActiveCard/ActiveCard'
 import { useAppDispatch } from '../../hook/useAppDispatch'
 
 function Board() {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   // Không dùng State của component nữa mà chuyển qua dùng State của Redux
   // const [board, setBoard] = useState(null)
   const board = useSelector(selectCurrentActiveBoard)
+  const error = useSelector(selectError);
 
   const { boardId } = useParams()
 
@@ -37,6 +40,10 @@ function Board() {
 
     dispatch(fetchBoardDetailsAPI(boardId as string))
   }, [dispatch, boardId])
+
+  useEffect(() => {
+    navigate('/404', { replace: true })
+  }, [error])
 
   /**
    * Func này có nhiệm vụ gọi API và xử lý khi kéo thả Column xong xuôi
@@ -127,7 +134,6 @@ function Board() {
       <ActiveCard />
 
       {/* Các thành phần còn lại của Board Details */}
-      <AppBar />
       <BoardBar board={board} />
       <BoardContent
         board={board}
