@@ -6,7 +6,7 @@ import Avatar from '@mui/material/Avatar'
 import LockIcon from '@mui/icons-material/Lock'
 import Typography from '@mui/material/Typography'
 import { Card as MuiCard } from '@mui/material'
-import { ReactComponent as TrelloIcon } from '../../assets/trello.svg'
+import { ReactComponent as EffiworkIcon } from '../../assets/Trello.svg'
 import CardActions from '@mui/material/CardActions'
 import TextField from '@mui/material/TextField'
 import Zoom from '@mui/material/Zoom'
@@ -64,7 +64,7 @@ function LoginForm() {
             gap: 1
           }}>
             <Avatar sx={{ bgcolor: 'primary.main' }}><LockIcon /></Avatar>
-            <Avatar sx={{ bgcolor: 'primary.main' }}><TrelloIcon /></Avatar>
+            <Avatar sx={{ bgcolor: 'primary.main' }}><EffiworkIcon /></Avatar>
           </Box>
           <Box sx={{ marginTop: '1em', display: 'flex', justifyContent: 'center', color: theme => theme.palette.grey[500] }}>
             Author: Effiwork
@@ -137,7 +137,7 @@ function LoginForm() {
             </Button>
           </CardActions>
           <Box sx={{ padding: '0 1em 1em 1em', textAlign: 'center' }}>
-            <Typography>New to Trello MERN Stack Advanced?</Typography>
+            <Typography>New to Effiwork MERN Stack Advanced?</Typography>
             <Link to="/register" style={{ textDecoration: 'none' }}>
               <Typography sx={{ color: 'primary.main', '&:hover': { color: '#ffbb39' } }}>Create account!</Typography>
             </Link>

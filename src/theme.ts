@@ -8,7 +8,7 @@ const COLUMN_FOOTER_HEIGHT = '56px'
 
 declare module '@mui/material/styles' {
   interface Theme {
-    trello: {
+    Effiwork: {
       appBarHeight: string;
       boardBarHeight: string;
       boardContentHeight: string;
@@ -18,7 +18,7 @@ declare module '@mui/material/styles' {
   }
 
   interface ThemeOptions {
-    trello?: {
+    Effiwork?: {
       appBarHeight?: string;
       boardBarHeight?: string;
       boardContentHeight?: string;
@@ -30,7 +30,7 @@ declare module '@mui/material/styles' {
 
 // Create a theme instance.
 const theme = extendTheme({
-  trello: {
+  Effiwork: {
     appBarHeight: APP_BAR_HEIGHT,
     boardBarHeight: BOARD_BAR_HEIGHT,
     boardContentHeight: BOARD_CONTENT_HEIGHT,

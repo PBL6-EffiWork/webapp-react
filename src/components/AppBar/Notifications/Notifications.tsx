@@ -82,7 +82,7 @@ function Notifications() {
     return () => {
       socketIoInstance.off('BE_USER_INVITED_TO_BOARD', onReceiveNewInvitation)
     }
-  }, [dispatch, currentUser._id])
+  }, [dispatch, currentUser?._id])
 
   // Cập nhật trạng thái - status của một cái lời mời join board
   const updateBoardInvitation = (status: string, invitationId: string) => {

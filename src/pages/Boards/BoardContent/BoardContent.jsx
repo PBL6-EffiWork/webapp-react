@@ -387,7 +387,7 @@ function BoardContent({
       <Box sx={{
         bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#ffffff'),
         // width: '100%',
-        height: (theme) => theme.trello.boardContentHeight,
+        height: (theme) => theme.Effiwork.boardContentHeight,
         p: '10px 0',
         overflowX: 'auto', // Cho phép cuộn ngang
         overflowY: 'hidden', // Ẩn cuộn dọc nếu không cần thiết

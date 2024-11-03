@@ -4,7 +4,7 @@ import '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Theme {
-    trello: {
+    Effiwork: {
       appBarHeight: string;
       boardBarHeight: string;
       boardContentHeight: string;
@@ -14,7 +14,7 @@ declare module '@mui/material/styles' {
   }
 
   interface ThemeOptions {
-    trello?: {
+    Effiwork?: {
       appBarHeight?: string;
       boardBarHeight?: string;
       boardContentHeight?: string;

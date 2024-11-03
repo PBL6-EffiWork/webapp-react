@@ -32,7 +32,7 @@ function BoardBar({ board }: { board: Board }) {
   return (
     <Box sx={{
       width: '100%',
-      height: (theme) => theme.trello.boardBarHeight,
+      height: (theme) => theme.Effiwork.boardBarHeight,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',

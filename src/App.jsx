@@ -41,7 +41,7 @@
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
-    padding: '20px',
+    // padding: '20px',
     overflow: 'hidden',
   });
 
@@ -59,12 +59,12 @@
         <MainLayout>
           {currentUser && <AppSidebar />}
           <MainContent>
-            <AppBar />
-            {currentUser && 
+            {currentUser && <AppBar />}
+            {/* {currentUser && 
               <Box sx={{ position: 'sticky', top: 0, zIndex: 1000 }}>
                 <SidebarTrigger />
               </Box>
-            }
+            } */}
             <MainContainer>
               <Routes>
                 {/* Redirect Route */}

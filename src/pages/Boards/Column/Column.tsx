@@ -176,12 +176,12 @@ function Column({ column }: ColumnProps) {
           ml: 2,
           borderRadius: '6px',
           height: 'fit-content',
-          maxHeight: (theme) => `calc(${theme.trello.boardContentHeight} - ${theme.spacing(5)})`
+          maxHeight: (theme) => `calc(${theme.Effiwork.boardContentHeight} - ${theme.spacing(5)})`
         }}
       >
         {/* Box Column Header */}
         <Box sx={{
-          height: (theme) => theme.trello.columnHeaderHeight,
+          height: (theme) => theme.Effiwork.columnHeaderHeight,
           p: 2,
           display: 'flex',
           alignItems: 'center',
@@ -264,7 +264,7 @@ function Column({ column }: ColumnProps) {
 
         {/* Box Column Footer */}
         <Box sx={{
-          height: (theme) => theme.trello.columnFooterHeight,
+          height: (theme) => theme.Effiwork.columnFooterHeight,
           p: 2
         }}>
           {!openNewCardForm

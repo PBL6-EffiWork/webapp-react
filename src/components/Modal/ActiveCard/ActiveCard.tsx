@@ -50,10 +50,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { styled } from '@mui/material/styles'
 import { useAppDispatch } from '@/hook/useAppDispatch'
 import { DatePicker } from '../DatePicker/DatePicker'
-import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover'
-import { Button } from '../../ui/button'
-import { Calendar } from '../../ui/calendar'
-import { cn } from '../../../lib/utils'
 import React from 'react'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -84,8 +80,8 @@ function ActiveCard() {
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
   const currentUser = useSelector(selectCurrentUser)
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
+    from: new Date(2024, 9, 15),
+    to: addDays(new Date(2024, 9, 15), 20),
   })
 
   // Không dùng biến State để check đóng mở Modal nữa vì chúng ta sẽ check theo cái biến isShowModalActiveCard trong redux
@@ -282,7 +278,7 @@ function ActiveCard() {
                     <ImageOutlinedIcon fontSize="small" />
                     <span>Cover</span>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <CheckCircleIcon fontSize="small" sx={{ color: '#27ae60' }} />
                   </Box>
                 </Box>
@@ -290,7 +286,7 @@ function ActiveCard() {
               </SidebarItem>
 
               <SidebarItem><AttachFileOutlinedIcon fontSize="small" />Attachment</SidebarItem>
-              <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem>
+              {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
               <SidebarItem><TaskAltOutlinedIcon fontSize="small" />Checklist</SidebarItem>
               <SidebarItem>
                 <DatePicker />
@@ -298,25 +294,25 @@ function ActiveCard() {
               <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>
             </Stack>
 
-            <Divider sx={{ my: 2 }} />
+            {/* <Divider sx={{ my: 2 }} /> */}
 
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
+            {/* <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Power-Ups</Typography>
             <Stack direction="column" spacing={1}>
               <SidebarItem><AspectRatioOutlinedIcon fontSize="small" />Card Size</SidebarItem>
               <SidebarItem><AddToDriveOutlinedIcon fontSize="small" />Google Drive</SidebarItem>
               <SidebarItem><AddOutlinedIcon fontSize="small" />Add Power-Ups</SidebarItem>
-            </Stack>
+            </Stack> */}
 
-            <Divider sx={{ my: 2 }} />
+            {/* <Divider sx={{ my: 2 }} /> */}
 
-            <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
+            {/* <Typography sx={{ fontWeight: '600', color: 'primary.main', mb: 1 }}>Actions</Typography>
             <Stack direction="column" spacing={1}>
               <SidebarItem><ArrowForwardOutlinedIcon fontSize="small" />Move</SidebarItem>
               <SidebarItem><ContentCopyOutlinedIcon fontSize="small" />Copy</SidebarItem>
               <SidebarItem><AutoAwesomeOutlinedIcon fontSize="small" />Make Template</SidebarItem>
               <SidebarItem><ArchiveOutlinedIcon fontSize="small" />Archive</SidebarItem>
               <SidebarItem><ShareOutlinedIcon fontSize="small" />Share</SidebarItem>
-            </Stack>
+            </Stack> */}
           </Grid>
         </Grid>
       </Box>

@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box'
 import ModeSelect from '../../components/ModeSelect/ModeSelect'
 import AppsIcon from '@mui/icons-material/Apps'
-import { ReactComponent as TrelloIcon } from '../../assets/trello.svg'
+import { ReactComponent as EffiworkIcon } from '../../assets/Trello.svg'
 import SvgIcon from '@mui/material/SvgIcon'
 import Typography from '@mui/material/Typography'
 import Workspaces from './Menus/Workspaces'
@@ -21,7 +21,7 @@ function AppBar() {
   return (
     <Box sx={{
       width: '100%',
-      height: (theme) => theme.trello.appBarHeight,
+      height: (theme) => theme.Effiwork.appBarHeight,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
@@ -39,12 +39,12 @@ function AppBar() {
 
         {/* <Link to="/">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <SvgIcon component={TrelloIcon} fontSize="small" inheritViewBox sx={{ color: 'white' }} />
-            <Typography component="span" sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>Trello</Typography>
+            <SvgIcon component={EffiworkIcon} fontSize="small" inheritViewBox sx={{ color: 'white' }} />
+            <Typography component="span" sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>Effiwork</Typography>
           </Box>
         </Link> */}
 
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+        {/* <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
           <Workspaces />
           <Recent />
           <Starred />
@@ -60,7 +60,7 @@ function AppBar() {
           >
             Create
           </Button>
-        </Box>
+        </Box> */}
 
       </Box>
 
