@@ -52,9 +52,10 @@ import { useAppDispatch } from '@/hook/useAppDispatch'
 import { DatePicker } from '../DatePicker/DatePicker'
 import React from 'react'
 
-import { loadHistoryCardThunk } from '@/redux/historyCard/historyCardSlice'
+import { loadHistoryCardThunk, selectHistoryByCardId } from '@/redux/historyCard/historyCardSlice'
 import { addCommentThunk, loadCommentsThunk, selectCommentsByCardId } from '../../../redux/comment/commentSlice'
-import { Comment } from '../../../interfaces/comment'
+import { Tab, Tabs } from '@mui/material'
+import CardHistory from './CardHistory'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -85,6 +86,13 @@ function ActiveCard() {
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
   const currentUser = useSelector(selectCurrentUser)
   const comments = useSelector(selectCommentsByCardId(activeCard?._id))
+  const histories = useSelector(selectHistoryByCardId(activeCard?._id))
+  
+  const [currentTab, setCurrentTab] = React.useState(0) // Trạng thái tab hiện tại
+
+  const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTab(newValue)
+  };
   // const [date, setDate] = React.useState<DateRange | undefined>({
   //   from: new Date(2024, 9, 15),
   //   to: addDays(new Date(2024, 9, 15), 20),
@@ -254,13 +262,30 @@ function ActiveCard() {
                 <DvrOutlinedIcon />
                 <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Activity</Typography>
               </Box>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs
+                  value={currentTab}
+                  onChange={handleChangeTab}
+                  aria-label="activity tabs"
+                >
+                  <Tab label="Comments" />
+                  <Tab label="Histories" />
+                </Tabs>
+              </Box>
 
               {/* Feature 04: Xử lý các hành động, ví dụ comment vào Card */}
-              <CardActivitySection
-                cardId={activeCard?._id}
-                cardComments={comments}
-                onAddCardComment={onAddCardComment}
-              />
+              <Box sx={{ mt: 2 }}>
+                {currentTab === 0 && (
+                  <CardActivitySection
+                    cardId={activeCard?._id}
+                    cardComments={comments}
+                    onAddCardComment={onAddCardComment}
+                  />
+                )}
+                {currentTab === 1 && (
+                  <CardHistory histories={histories} />
+                )}
+              </Box>
             </Box>
           </Grid>
 

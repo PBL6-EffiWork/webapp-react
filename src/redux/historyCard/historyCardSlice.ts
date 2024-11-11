@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { HistoryType, History } from "../../interfaces/history";
 import { loadHistoryCardAPI } from "../../apis";
 
@@ -43,4 +43,13 @@ export const historiesReducer = historySlice.reducer
 
 export const selectHistories = (state: { histories: HistoryCardState }) => state.histories.historiesCard
 
-export const selectHistoryByCardId = (cardId: string) => (state: { histories: HistoryCardState }) => state.histories.historiesCard[cardId]
+export const selectHistoryByCardId = (cardId?: string) => createSelector(
+  selectHistories,
+  (histories) => {
+    if (!cardId) {
+      return []
+    }
+  
+    return histories[cardId];
+  }
+)
