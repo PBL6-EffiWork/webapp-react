@@ -9,8 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Box, Typography } from "@mui/material";
 
 interface DatePickerProps extends React.HTMLAttributes<HTMLDivElement> {
-  selectedDate?: DateRange;
-  onDateChange?: (range: DateRange | undefined) => void;
+  selectedDate?: any;
+  onDateChange?: (range: any) => void;
   isShowLastDate?: boolean;
 }
 
@@ -21,19 +21,39 @@ export function DatePicker({
   isShowLastDate = false,
   ...props
 }: DatePickerProps) {
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
-    from: new Date(2024, 9, 15),
-    to: addDays(new Date(2024, 9, 15), 20),
-  });
+  // selectedDate có thể là undefined, nên cần xử lý trước khi setState vào dateRange
+  // selectedDate là milisecond, nên cần convert sang date trước khi setState
 
-  React.useEffect(() => {
-    if (onDateChange) {
-      onDateChange(dateRange);
+  const dateRange = React.useMemo(() => {
+    return {
+      from: selectedDate?.from ? new Date(selectedDate.from) : undefined,
+      to: selectedDate?.to ? new Date(selectedDate.to) : undefined,
     }
-  }, [dateRange, onDateChange]);
+  }, [selectedDate]);
+
+  const handleChangeDate = React.useCallback((date: any) => {
+    if (onDateChange) {
+      // convert date sang milisecond
+      console.log('date in date picker', date);
+      if (
+        date?.from && date?.to && 
+        selectedDate?.from && selectedDate?.to &&
+        new Date(date.from).getTime() === new Date(selectedDate?.from).getTime() &&
+        new Date(date.to).getTime() === new Date(selectedDate?.to).getTime()
+      ) {
+        return;
+      }
+
+      const dateMilisecond = {
+        from: date?.from ? date?.from?.getTime() : undefined,
+        to: date?.to ? date?.to?.getTime() : undefined,
+      }
+      onDateChange(dateMilisecond);
+    }
+  }, [onDateChange]);
 
   const title = React.useMemo(() => {
-    if (!isShowLastDate) {
+    if (!isShowLastDate || !selectedDate?.to) {
       return (
         <Box sx={{
           gap: '6px',
@@ -64,8 +84,7 @@ export function DatePicker({
           defaultMonth={dateRange?.from}
           selected={dateRange}
           onSelect={(range) => {
-            console.log(range);
-            setDateRange(range);
+            handleChangeDate(range);
           }}
           numberOfMonths={1}
         />

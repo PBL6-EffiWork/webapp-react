@@ -51,6 +51,11 @@ import { styled } from '@mui/material/styles'
 import { useAppDispatch } from '@/hook/useAppDispatch'
 import { DatePicker } from '../DatePicker/DatePicker'
 import React from 'react'
+
+import { loadHistoryCardThunk } from '@/redux/historyCard/historyCardSlice'
+import { addCommentThunk, loadCommentsThunk, selectCommentsByCardId } from '../../../redux/comment/commentSlice'
+import { Comment } from '../../../interfaces/comment'
+
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -79,10 +84,11 @@ function ActiveCard() {
   const activeCard = useSelector(selectCurrentActiveCard)
   const isShowModalActiveCard = useSelector(selectIsShowModalActiveCard)
   const currentUser = useSelector(selectCurrentUser)
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2024, 9, 15),
-    to: addDays(new Date(2024, 9, 15), 20),
-  })
+  const comments = useSelector(selectCommentsByCardId(activeCard?._id))
+  // const [date, setDate] = React.useState<DateRange | undefined>({
+  //   from: new Date(2024, 9, 15),
+  //   to: addDays(new Date(2024, 9, 15), 20),
+  // })
 
   // Không dùng biến State để check đóng mở Modal nữa vì chúng ta sẽ check theo cái biến isShowModalActiveCard trong redux
   // const [isOpen, setIsOpen] = useState(true)
@@ -113,6 +119,17 @@ function ActiveCard() {
     callApiUpdateCard({ description: newDescription })
   }
 
+  const onUpdateCardDate = (date: any) => {
+    if (date?.to !== undefined && date?.from !== undefined &&
+      new Date(date.from).getTime() === new Date(activeCard?.startDate).getTime() &&
+      new Date(date.to).getTime() ===   new Date(activeCard?.dueDate).getTime()
+    ) {
+      return;
+    }
+
+    callApiUpdateCard({ updateStartDate: date?.from ?? null, updateDueDate: date?.to ?? null })
+  }
+
   const onUploadCardCover = (event: any) => {
     // console.log(event.target?.files[0])
     const error = singleFileValidator(event.target?.files[0])
@@ -132,12 +149,20 @@ function ActiveCard() {
 
   // Dùng async await ở đây để component con CardActivitySection chờ và nếu thành công thì mới clear thẻ input comment
   const onAddCardComment = async (commentToAdd: any) => {
-    await callApiUpdateCard({ commentToAdd })
+    console.log('commentToAdd', commentToAdd);
+    dispatch(addCommentThunk(commentToAdd))
   }
 
   const onUpdateCardMembers = (incomingMemberInfo: any) => {
     callApiUpdateCard({ incomingMemberInfo })
   }
+
+  React.useEffect(() => {
+    if (activeCard) {
+      dispatch(loadHistoryCardThunk(activeCard._id))
+      dispatch(loadCommentsThunk(activeCard._id))
+    }
+  }, [activeCard])
 
   return (
     <Modal
@@ -203,8 +228,11 @@ function ActiveCard() {
             <Box sx={{ mb: 3, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}>
               <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
 
-              <DatePicker isShowLastDate={true} selectedDate={date} onDateChange={(date) => {
-                setDate(date)
+              <DatePicker isShowLastDate={true} selectedDate={{
+                from: activeCard?.startDate,
+                to: activeCard?.dueDate
+              }} onDateChange={(date) => {
+                onUpdateCardDate(date)
               }}/>
             </Box>
 
@@ -229,7 +257,8 @@ function ActiveCard() {
 
               {/* Feature 04: Xử lý các hành động, ví dụ comment vào Card */}
               <CardActivitySection
-                cardComments={activeCard?.comments}
+                cardId={activeCard?._id}
+                cardComments={comments}
                 onAddCardComment={onAddCardComment}
               />
             </Box>
@@ -288,9 +317,6 @@ function ActiveCard() {
               <SidebarItem><AttachFileOutlinedIcon fontSize="small" />Attachment</SidebarItem>
               {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
               <SidebarItem><TaskAltOutlinedIcon fontSize="small" />Checklist</SidebarItem>
-              <SidebarItem>
-                <DatePicker />
-              </SidebarItem>
               <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>
             </Stack>
 

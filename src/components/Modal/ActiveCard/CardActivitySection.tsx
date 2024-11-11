@@ -7,16 +7,20 @@ import Tooltip from '@mui/material/Tooltip'
 
 import { useSelector } from 'react-redux'
 import { selectCurrentUser } from '../../../redux/user/userSlice'
+import { Comment } from '../../../interfaces/comment'
+import React from 'react'
 
 interface CardActivitySectionProps {
-  cardComments: Array<{ userAvatar: string, userDisplayName: string, content: string, commentedAt: string }>;
-  onAddCardComment: (comment: { userAvatar: string, userDisplayName: string, content: string }) => Promise<void>;
+  cardId?: string;
+  cardComments: any[];
+  onAddCardComment: (comment: Comment) => Promise<void>;
 }
 
-function CardActivitySection({ cardComments = [], onAddCardComment }: CardActivitySectionProps) {
+function CardActivitySection({ cardId ,cardComments = [], onAddCardComment }: CardActivitySectionProps) {
   const currentUser = useSelector(selectCurrentUser)
 
-  const handleAddCardComment = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleAddCardComment = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
     // Bắt hành động người dùng nhấn phím Enter && không phải hành động Shift + Enter
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault() // Thêm dòng này để khi Enter không bị nhảy dòng
@@ -25,8 +29,8 @@ function CardActivitySection({ cardComments = [], onAddCardComment }: CardActivi
 
       // Tạo một biến commend data để gửi api
       const commentToAdd = {
-        userAvatar: currentUser?.avatar,
-        userDisplayName: currentUser?.displayName,
+        userId: currentUser._id,
+        cardId: cardId as string,
         content: (event.target as HTMLInputElement).value.trim()
       }
       // Gọi lên Props ở component cha
@@ -34,7 +38,9 @@ function CardActivitySection({ cardComments = [], onAddCardComment }: CardActivi
         (event.target as HTMLInputElement).value = ''
       })
     }
-  }
+  }, [cardId, currentUser, onAddCardComment])
+
+  console.log(cardComments);
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -56,7 +62,7 @@ function CardActivitySection({ cardComments = [], onAddCardComment }: CardActivi
       </Box>
 
       {/* Hiển thị danh sách các comments */}
-      {cardComments.length === 0 &&
+      {!cardComments || cardComments.length === 0 &&
         <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No activity found!</Typography>
       }
       {cardComments.map((comment, index) =>
@@ -65,7 +71,7 @@ function CardActivitySection({ cardComments = [], onAddCardComment }: CardActivi
             <Avatar
               sx={{ width: 36, height: 36, cursor: 'pointer' }}
               alt="Effiwork"
-              src={comment.userAvatar}
+              src={comment.avatar}
             />
           </Tooltip>
           <Box sx={{ width: 'inherit' }}>
@@ -74,7 +80,7 @@ function CardActivitySection({ cardComments = [], onAddCardComment }: CardActivi
             </Typography>
 
             <Typography component="span" sx={{ fontSize: '12px' }}>
-              {moment(comment.commentedAt).format('llll')}
+              {moment(comment.createdAt).format('llll')}
             </Typography>
 
             <Box sx={{

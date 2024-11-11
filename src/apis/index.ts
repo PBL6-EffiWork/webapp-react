@@ -2,13 +2,6 @@ import authorizedAxiosInstance from '../utils/authorizeAxios'
 import { API_ROOT } from '../utils/constants'
 import { toast } from 'react-toastify'
 
-/**
- * Tất cả các function bên dưới các bạn sẽ thấy mình chỉ request và lấy data từ response luôn, mà không có try catch hay then catch gì để bắt lỗi.
- * Lý do là vì ở phía Front-end chúng ta không cần thiết làm như vậy đối với mọi request bởi nó sẽ gây ra việc dư thừa code catch lỗi quá nhiều.
- * Giải pháp Clean Code gọn gàng đó là chúng ta sẽ catch lỗi tập trung tại một nơi bằng cách tận dụng một thứ cực kỳ mạnh mẽ trong axios đó là Interceptors
- * Hiểu đơn giản Interceptors là cách mà chúng ta sẽ đánh chặn vào giữa request hoặc response để xử lý logic mà chúng ta muốn.
- * (Và ở học phần MERN Stack Advance nâng cao học trực tiếp mình sẽ dạy cực kỳ đầy đủ cách xử lý, áp dụng phần này chuẩn chỉnh cho các bạn.)
- */
 
 /** Boards */
 // Đã move vào redux
@@ -23,7 +16,7 @@ export const updateBoardDetailsAPI = async (boardId: any, updateData: { columnOr
   return response.data
 }
 
-export const moveCardToDifferentColumnAPI = async (updateData: { currentCardId: any; prevColumnId: any; prevCardOrderIds: any; nextColumnId: any; nextCardOrderIds: any }) => {
+export const moveCardToDifferentColumnAPI = async (updateData: { currentCardId: any; prevColumnId: string; prevCardOrderIds: any; nextColumnId: any; nextCardOrderIds: any }) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/boards/supports/moving_card`, updateData)
   return response.data
 }
@@ -34,19 +27,36 @@ export const createNewColumnAPI = async (newColumnData: { boardId: any; title: s
   return response.data
 }
 
-export const updateColumnDetailsAPI = async (columnId: any, updateData: { title?: any; cardOrderIds?: any }) => {
+export const updateColumnDetailsAPI = async (columnId: string, updateData: { title?: any; cardOrderIds?: any }) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/columns/${columnId}`, updateData)
   return response.data
 }
 
-export const deleteColumnDetailsAPI = async (columnId: any) => {
+export const deleteColumnDetailsAPI = async (columnId: string) => {
   const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/columns/${columnId}`)
   return response.data
 }
 
 /** Cards */
-export const createNewCardAPI = async (newCardData: { boardId: any; title: string; columnId: any }) => {
+export const createNewCardAPI = async (newCardData: { boardId: any; title: string; columnId: string }) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/cards`, newCardData)
+  return response.data
+}
+
+/** Comments */
+export const createCommentAPI = async (newCommentData: { cardId: string; userId: string; content: string }) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/comments`, newCommentData)
+  return response.data
+}
+
+export const getCommentsAPI = async (cardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/comments/${cardId}`)
+  return response.data
+}
+
+/** History */
+export const loadHistoryCardAPI = async (cardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/history/card/${cardId}`)
   return response.data
 }
 
