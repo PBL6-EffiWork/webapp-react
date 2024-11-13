@@ -115,7 +115,7 @@ function ListColumns({ columns }: ListColumnsProps) {
             mx: 2,
             borderRadius: '6px',
             height: 'fit-content',
-            bgcolor: '#1bafff'
+            bgcolor: '#1976d2'
           }}>
             <Button
               startIcon={<NoteAddIcon />}
@@ -137,7 +137,7 @@ function ListColumns({ columns }: ListColumnsProps) {
             p: 1,
             borderRadius: '6px',
             height: 'fit-content',
-            bgcolor: '#1bafff',
+            bgcolor: '#1976d2',
             display: 'flex',
             flexDirection: 'column',
             gap: 1
@@ -165,12 +165,12 @@ function ListColumns({ columns }: ListColumnsProps) {
               <Button
                 className="interceptor-loading"
                 onClick={addNewColumn}
-                variant="contained" color="success" size="small"
+                variant="contained" color="info" size="small"
                 sx={{
                   boxShadow: 'none',
                   border: '0.5px solid',
-                  borderColor: (theme) => theme.palette.success.main,
-                  '&:hover': { bgcolor: (theme) => theme.palette.success.main }
+                  borderColor: (theme) => theme.palette.info.main,
+                  '&:hover': { bgcolor: (theme) => theme.palette.info.main }
                 }}
               >Add Column</Button>
               <CloseIcon

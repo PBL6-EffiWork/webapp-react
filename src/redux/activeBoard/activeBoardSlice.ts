@@ -4,6 +4,7 @@ import { API_ROOT } from '../../utils/constants'
 import { mapOrder } from '../../utils/sorts'
 import { isEmpty } from 'lodash'
 import { generatePlaceholderCard } from '../../utils/formatters'
+import { Column } from '../../interfaces/column'
 
 // Define the structure of a Card, Column, and Board
 interface Card {
@@ -11,10 +12,6 @@ interface Card {
   columnId: string
   title: string
   // Add other properties as needed
-}
-
-interface Column {
-  [key: string]: any
 }
 
 interface Board {
@@ -79,7 +76,7 @@ export const activeBoardSlice = createSlice({
 
       board.columns.forEach(column => {
         if (isEmpty(column.cards)) {
-          column.cards = [generatePlaceholderCard(column)]
+          column.cards = [generatePlaceholderCard(column) as any]
           column.cardOrderIds = [generatePlaceholderCard(column)._id]
         } else {
           column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
