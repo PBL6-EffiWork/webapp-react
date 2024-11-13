@@ -2,13 +2,20 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { countUser } from './services/api';
+import { dashboardHelper } from './services/api';
 
 function Dashboard() {
-    const [total, setTotal] = useState([]);
+    const [totalUsers, setTotalUsers] = useState([]);
     useEffect(() => {
-        countUser()
-        .then(data => setTotal(data.total))
+        dashboardHelper.countUser()
+        .then(data => setTotalUsers(data.total))
+        .catch(error => console.error(error));
+    }, []);
+
+    const [totalProjects, setTotalProjects] = useState([]);
+    useEffect(() => {
+        dashboardHelper.countBoard()
+        .then(data => setTotalProjects(data.total))
         .catch(error => console.error(error));
     }, []);
 
@@ -35,8 +42,8 @@ function Dashboard() {
               </svg>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{total}</div>
-              <p className="text-xs text-muted-foreground">+20.1% so với tháng trước</p>
+                <div className="text-2xl font-bold">{totalProjects}</div>
+              {/* <p className="text-xs text-muted-foreground">+20.1% so với tháng trước</p> */}
             </CardContent>
           </Card>
           <Card>
@@ -58,8 +65,8 @@ function Dashboard() {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{total}</div>
-              <p className="text-xs text-muted-foreground">+180.1% so với tháng trước</p>
+              <div className="text-2xl font-bold">{totalUsers}</div>
+              {/* <p className="text-xs text-muted-foreground">+180.1% so với tháng trước</p> */}
             </CardContent>
           </Card>
           <Card>
@@ -81,7 +88,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+12.234</div>
-              <p className="text-xs text-muted-foreground">+19% so với tháng trước</p>
+              {/* <p className="text-xs text-muted-foreground">+19% so với tháng trước</p> */}
             </CardContent>
           </Card>
           <Card>
@@ -102,7 +109,7 @@ function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+573</div>
-              <p className="text-xs text-muted-foreground">+201 từ giờ trước</p>
+              {/* <p className="text-xs text-muted-foreground">+201 từ giờ trước</p> */}
             </CardContent>
           </Card>
         </div>
