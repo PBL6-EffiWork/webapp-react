@@ -28,7 +28,7 @@ function AppBar() {
       gap: 2,
       paddingX: 2,
       overflowX: 'auto',
-      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#2c3e50' : '#1565c0')
+      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#2c3e50' : '#1976d2')
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         {/* <Link to="/boards">
@@ -74,11 +74,11 @@ function AppBar() {
         {/* Xử lý hiển thị các thông báo - notifications ở đây */}
         <Notifications />
 
-        <Tooltip title="Help">
+        {/* <Tooltip title="Help">
           <HelpOutlineIcon sx={{ cursor: 'pointer', color: 'white' }} />
         </Tooltip>
 
-        <Profiles />
+        <Profiles /> */}
 
       </Box>
     </Box>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Container from '@mui/material/Container'
 import AppBar from '../../components/AppBar/AppBar'
 import BoardBar from './BoardBar/BoardBar'
@@ -22,14 +22,44 @@ import PageLoadingSpinner from '../../components/Loading/PageLoadingSpinner'
 import ActiveCard from '../../components/Modal/ActiveCard/ActiveCard'
 import { useAppDispatch } from '../../hooks/useAppDispatch'
 import BoardTools from './BoardTools/BoardTools'
-import { Box } from '@mui/material'
+import { Box, Tab, Tabs, Typography } from '@mui/material'
 import React from 'react'
+import BoardTable from './BoardTable/BoardTable'
+import { Column } from '../../interfaces/column'
+import { Card } from '../../interfaces/card'
+
+function TabPanel(props: any) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography component="div">{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
 
 function Board() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const board = useSelector(selectCurrentActiveBoard)
+  const [columns, setColumns] = useState<Column[]>([])
+  const [cards, setCards] = useState<Card[]>([])
   const error = useSelector(selectError);
+  const [value, setValue] = useState(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
 
   const { boardId } = useParams()
 
@@ -136,6 +166,15 @@ function Board() {
     }
   },[dispatch])
 
+  useEffect(() => {
+    if (board) {
+      const columnsData = board.columns
+      const cardsData: Card[] = columnsData.flatMap((col) => col.cards)
+      setColumns(columnsData)
+      setCards(cardsData)
+    }
+  }, [board])
+
   if (!board) {
     console.log('Board is null', board);
     return <PageLoadingSpinner caption="Loading Board..." />
@@ -149,15 +188,32 @@ function Board() {
       {/* Các thành phần còn lại của Board Details */}
       <BoardBar board={board} />
       {/* <BoardTools /> */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <BoardContent
-          board={board}
-          // 3 cái trường hợp move dưới đây thì giữ nguyên để code xử lý kéo thả ở phần BoardContent không bị quá dài mất kiểm soát khi đọc code, maintain.
-          moveColumns={moveColumns}
-          moveCardInTheSameColumn={moveCardInTheSameColumn}
-          moveCardToDifferentColumn={moveCardToDifferentColumn}
-          />
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={value} onChange={handleChange} aria-label="dashboard tabs">
+          <Tab label="Board" />
+          <Tab label="Table" />
+          <Tab label="Timeline" />
+        </Tabs>
       </Box>
+      {/* Nội dung từng Tab */}
+      <TabPanel value={value} index={0}>
+        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+          <BoardContent
+            board={board}
+            moveColumns={moveColumns}
+            moveCardInTheSameColumn={moveCardInTheSameColumn}
+            moveCardToDifferentColumn={moveCardToDifferentColumn}
+          />
+        </Box>
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+          <BoardTable data={columns} />
+        </Box>
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        {/* <TimelineComponent /> */}
+      </TabPanel>
     </Container>
   )
 }
