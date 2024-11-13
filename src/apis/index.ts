@@ -73,8 +73,12 @@ export const verifyUserAPI = async (data: { email: string; token: string }) => {
   return response.data
 }
 
-export const refreshTokenAPI = async () => {
-  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/refresh_token`)
+export const refreshTokenAPI = async (refreshToken: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/refresh_token`, {
+    params: {
+      refreshToken
+    }
+  })
   return response.data
 }
 

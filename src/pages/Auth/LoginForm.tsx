@@ -49,7 +49,9 @@ function LoginForm() {
       // console.log(res)
       // Đoạn này phải kiểm tra không có lỗi (login thành công) thì mới redirect về route /
       const result = res as { error?: boolean }
-      if (!result.error) navigate('/')
+      if (!result.error) {
+        navigate('/')
+      }
     })
   }
 

@@ -4,6 +4,7 @@ import { interceptorLoadingElements } from '../utils/formatters';
 import { refreshTokenAPI } from '../apis';
 import { logoutUserAPI } from '../redux/user/userSlice';
 import { Store } from 'redux';
+import { LocalStorageHelper } from '../helpers/storage';
 
 /**
  * Không thể import { store } từ 'store' theo cách thông thường như các file jsx component
@@ -33,7 +34,15 @@ authorizedAxiosInstance.interceptors.request.use(
     // Kỹ thuật chặn spam click (xem kỹ mô tả ở file formatters chứa function)
     interceptorLoadingElements(true);
 
+    const accessToken = LocalStorageHelper.getItem('accessToken');
+
+    // Nếu có accessToken, thêm vào Authorization header
+    if (accessToken && config.headers) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     return config;
+
   },
   (error: AxiosError): Promise<AxiosError> => {
     // Do something with request error
@@ -78,7 +87,8 @@ authorizedAxiosInstance.interceptors.response.use(
 
       // Trường hợp 2 > Bước 2: Kiểm tra xem nếu chưa có refreshTokenPromise thì thực hiện gán việc gọi api refresh_token đồng thời gán vào cho cái refreshTokenPromise
       if (!refreshTokenPromise) {
-        refreshTokenPromise = refreshTokenAPI()
+        const refreshToken = LocalStorageHelper.getItem('refreshToken') as string
+        refreshTokenPromise = refreshTokenAPI(refreshToken)
           .then((data) => {
             /**
              * Đối với Trường hợp nếu dự án cần lưu accessToken vào localstorage hoặc đâu đó thì sẽ viết thêm code xử lý ở đây.
@@ -106,6 +116,8 @@ authorizedAxiosInstance.interceptors.response.use(
          * Case 1: Đối với Trường hợp nếu dự án cần lưu accessToken vào localstorage hoặc đâu đó thì sẽ viết thêm code xử lý ở đây.
          * Hiện tại ở đây không cần bước 1 này vì chúng ta đã đưa accessToken vào cookie (xử lý từ phía BE) sau khi api refreshToken được gọi thành công.
          */
+
+        LocalStorageHelper.setItem('accessToken', accessToken)
 
         // Case 2: Bước Quan trọng: Return lại axios instance của chúng ta kết hợp các originalRequests để gọi lại những api ban đầu bị lỗi
         return authorizedAxiosInstance(originalRequest);

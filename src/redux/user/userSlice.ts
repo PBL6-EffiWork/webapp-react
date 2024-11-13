@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import authorizedAxiosInstance from '../../utils/authorizeAxios'
 import { API_ROOT } from '../../utils/constants'
 import { toast } from 'react-toastify'
+import { LocalStorageHelper } from '../../helpers/storage'
 
 // Define types for the initial state and user
 interface User {
@@ -66,9 +67,14 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(loginUserAPI.fulfilled, (state, action: PayloadAction<User>) => {
       state.currentUser = action.payload
+      const { accessToken, refreshToken } = action.payload
+      LocalStorageHelper.setItem('accessToken', accessToken)
+      LocalStorageHelper.setItem('refreshToken', refreshToken)
     })
     builder.addCase(logoutUserAPI.fulfilled, (state) => {
       state.currentUser = null
+      LocalStorageHelper.removeItem('accessToken')
+      LocalStorageHelper.removeItem('refreshToken')
     })
     builder.addCase(updateUserAPI.fulfilled, (state, action: PayloadAction<User>) => {
       state.currentUser = action.payload
