@@ -16,7 +16,7 @@ import {
 } from '../../../redux/activeBoard/activeBoardSlice'
 import { useSelector } from 'react-redux'
 import { cloneDeep } from 'lodash'
-import { useAppDispatch } from '../../../hook/useAppDispatch'
+import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React from 'react'
 
 interface Column {

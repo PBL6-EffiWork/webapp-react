@@ -5,6 +5,7 @@ let apiRoot = ''
 // Môi trường Dev sẽ chạy localhost với port 8017
 if (process.env.BUILD_MODE === 'dev') {
   apiRoot = 'http://localhost:8017'
+  // apiRoot = 'http://18.207.127.179:3000'
 }
 
 // Môi trường Production sẽ cần api endpoint chuẩn của các bạn

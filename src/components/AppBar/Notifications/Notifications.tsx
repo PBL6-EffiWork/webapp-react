@@ -24,7 +24,7 @@ import { socketIoInstance } from '../../../socketClient'
 import { selectCurrentUser } from '../../../redux/user/userSlice'
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
-import { useAppDispatch } from '../../../hook/useAppDispatch'
+import { useAppDispatch } from '../../../hooks/useAppDispatch'
 
 const BOARD_INVITATION_STATUS = {
   PENDING: 'PENDING',

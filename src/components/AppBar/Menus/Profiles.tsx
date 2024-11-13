@@ -15,7 +15,7 @@ import { selectCurrentUser } from '../../../redux/user/userSlice'
 import { logoutUserAPI } from '../../../redux/user/userSlice'
 import { useConfirm } from 'material-ui-confirm'
 import { Link } from 'react-router-dom'
-import { useAppDispatch } from '../../../hook/useAppDispatch'
+import { useAppDispatch } from '../../../hooks/useAppDispatch'
 
 function Profiles() {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)

@@ -30,7 +30,7 @@ import {
 import { useSelector } from 'react-redux'
 import { cloneDeep } from 'lodash'
 import ToggleFocusInput from '../../../components/Form/ToggleFocusInput'
-import { useAppDispatch } from '../../../hook/useAppDispatch'
+import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React from 'react'
 
 interface ColumnProps {

@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { updateCurrentActiveCard, showModalActiveCard } from '../../../redux/activeCard/activeCardSlice'
-import { useAppDispatch } from '../../../hook/useAppDispatch'
+import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React from 'react'
 
 interface CardProps {

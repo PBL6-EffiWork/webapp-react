@@ -17,7 +17,7 @@ import { selectCurrentUser, updateUserAPI } from '../../redux/user/userSlice'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import VisuallyHiddenInput from '../../components/Form/VisuallyHiddenInput'
-import { useAppDispatch } from '../../hook/useAppDispatch'
+import { useAppDispatch } from '../../hooks/useAppDispatch'
 
 function AccountTab() {
   const dispatch = useAppDispatch()

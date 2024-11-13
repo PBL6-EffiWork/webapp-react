@@ -48,7 +48,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 import { styled } from '@mui/material/styles'
-import { useAppDispatch } from '@/hook/useAppDispatch'
+import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { DatePicker } from '../DatePicker/DatePicker'
 import React from 'react'
 

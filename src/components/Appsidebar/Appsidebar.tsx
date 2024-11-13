@@ -16,7 +16,7 @@ import {
 import { Link } from "react-router-dom"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { useConfirm } from "material-ui-confirm"
-import { useAppDispatch } from "../../hook/useAppDispatch"
+import { useAppDispatch } from "../../hooks/useAppDispatch"
 import { logoutUserAPI } from "../../redux/user/userSlice"
 import { Button } from "../ui/button"
 

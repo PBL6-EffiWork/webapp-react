@@ -23,7 +23,7 @@ import FieldErrorAlert from '../../components/Form/FieldErrorAlert'
 import { loginUserAPI } from '../../redux/user/userSlice'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useAppDispatch } from '../../hook/useAppDispatch'
+import { useAppDispatch } from '../../hooks/useAppDispatch'
 
 function LoginForm() {
   const dispatch = useAppDispatch()
