@@ -14,6 +14,7 @@
   import { SidebarTrigger, SidebarProvider } from './components/ui/sidebar'
   import { useEffect } from 'react'
   import { Box } from '@mui/material'
+import Dashboard from './pages/Dashboard'
 
   // Styled components for layout
   const MainLayout = styled('div')({
@@ -77,6 +78,7 @@
                   {/* Board Routes */}
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
+                  <Route path='/dashboard' element={<Dashboard />} />
 
                   {/* Settings Routes */}
                   <Route path='/settings/account' element={<Settings />} />
