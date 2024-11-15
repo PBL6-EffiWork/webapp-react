@@ -6,7 +6,7 @@ import Avatar from '@mui/material/Avatar'
 import LockIcon from '@mui/icons-material/Lock'
 import Typography from '@mui/material/Typography'
 import { Card as MuiCard } from '@mui/material'
-import { ReactComponent as EffiworkIcon } from '../../assets/Trello.svg'
+// import { ReactComponent as EffiworkIcon } from '../../assets/Trello.svg'
 import CardActions from '@mui/material/CardActions'
 import TextField from '@mui/material/TextField'
 import Zoom from '@mui/material/Zoom'
@@ -66,7 +66,7 @@ function LoginForm() {
             gap: 1
           }}>
             <Avatar sx={{ bgcolor: 'primary.main' }}><LockIcon /></Avatar>
-            <Avatar sx={{ bgcolor: 'primary.main' }}><EffiworkIcon /></Avatar>
+            {/* <Avatar sx={{ bgcolor: 'primary.main' }}><EffiworkIcon /></Avatar> */}
           </Box>
           <Box sx={{ marginTop: '1em', display: 'flex', justifyContent: 'center', color: theme => theme.palette.grey[500] }}>
             Author: Effiwork
