@@ -11,7 +11,8 @@ if (process.env.BUILD_MODE === 'dev') {
 
 // Môi trường Production sẽ cần api endpoint chuẩn của các bạn
 if (process.env.BUILD_MODE === 'production') {
-  apiRoot = 'https://api.tusgino.tech'
+  // apiRoot = 'https://api.tusgino.tech'
+  apiRoot = 'http://localhost:8017'
 }
 export const API_ROOT = apiRoot
 
