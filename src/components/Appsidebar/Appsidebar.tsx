@@ -1,5 +1,6 @@
-import { Calendar, Home, Inbox, Search, FolderKanban, ChevronUp, User2, Settings2, LogOut, CircleUser } from "lucide-react"
-import { ReactComponent as Logo } from '../../assets/logo.svg'
+// src/components/Appsidebar/Appsidebar.tsx
+import { Calendar, Home, Inbox, FolderKanban, ChevronUp, User2, LogOut, CircleUser } from "lucide-react";
+import { ReactComponent as Logo } from '../../assets/logo.svg';
 
 import {
   Sidebar,
@@ -7,42 +8,41 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Link } from "react-router-dom"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import { useConfirm } from "material-ui-confirm"
-import { useAppDispatch } from "../../hooks/useAppDispatch"
-import { logoutUserAPI } from "../../redux/user/userSlice"
-import { Button } from "../ui/button"
+} from "@/components/ui/sidebar";
+import { NavLink } from "react-router-dom";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { useConfirm } from "material-ui-confirm";
+import { useAppDispatch } from "../../hooks/useAppDispatch";
+import { logoutUserAPI } from "../../redux/user/userSlice";
+import { Button } from "../ui/button";
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/",
     icon: Home,
   },
   {
-    title: "Board",
+    title: "Boards",
     url: "/boards",
     icon: FolderKanban,
   },
   {
     title: "Inbox",
-    url: "#",
+    url: "/inbox",
     icon: Inbox,
   },
   {
     title: "Calendar",
-    url: "#",
+    url: "/calendar",
     icon: Calendar,
   },
-]
+];
 
 const profileItems = [
   {
@@ -54,82 +54,87 @@ const profileItems = [
     title: "Logout",
     icon: LogOut,
   },
-]
+];
 
 export function AppSidebar() {
-  const dispatch = useAppDispatch()
-  const confirmLogout = useConfirm()
+  const dispatch = useAppDispatch();
+  const confirmLogout = useConfirm();
+
   const handleLogout = () => {
     confirmLogout({
       title: 'Log out of your account?',
       confirmationText: 'Confirm',
       cancellationText: 'Cancel'
     }).then(() => {
-      dispatch(logoutUserAPI(true))
-    }).catch(() => {})
-  }
+      dispatch(logoutUserAPI(true));
+    }).catch(() => {});
+  };
+
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <Logo width={200}/>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <Sidebar>
+        <SidebarHeader>
+          <Logo width={200} />
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                            to={item.url}
+                            className={({ isActive }) =>
+                                isActive ? "active-class flex items-center p-2 rounded" : "flex items-center p-2 rounded"
+                            }
+                        >
+                          <item.icon className="mr-2" /> {/* Add some margin to the icon */}
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton>
-                <User2 /> Username
+                <User2 className="mr-2" /> {/* Add some margin to the icon */}
+                Username
                 <ChevronUp className="ml-auto" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              side="top"
-              className="w-[--radix-popper-anchor-width]"
+                side="top"
+                className="w-full"
             >
-              {/* <DropdownMenuItem>
-                <span>Account</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Billing</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Sign out</span>
-              </DropdownMenuItem> */}
               {profileItems.map((item) => (
-                <DropdownMenuItem key={item.title} asChild>
-                  {item.url ? (
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  ) : (
-                    <Link to={'#'} onClick={handleLogout}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  )}
-                </DropdownMenuItem>
+                  <DropdownMenuItem key={item.title} asChild>
+                    {item.url ? (
+                        <NavLink
+                            to={item.url}
+                            className="flex items-center p-2 rounded hover:bg-gray-200"
+                        >
+                          <item.icon className="mr-2" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                    ) : (
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center p-2 rounded hover:bg-gray-200 w-full text-left"
+                        >
+                          <item.icon className="mr-2" />
+                          <span>{item.title}</span>
+                        </button>
+                    )}
+                  </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-      </SidebarFooter>
-    </Sidebar>
-  )
+        </SidebarFooter>
+      </Sidebar>
+  );
 }

@@ -15,6 +15,8 @@
   import { useEffect } from 'react'
   import { Box } from '@mui/material'
 
+  import MyCalendar from './pages/Calendar/Calendar';
+
   // Styled components for layout
   const MainLayout = styled('div')({
     display: 'flex',
@@ -60,7 +62,7 @@
           {currentUser && <AppSidebar />}
           <MainContent>
             {currentUser && <AppBar />}
-            {/* {currentUser && 
+            {/* {currentUser &&
               <Box sx={{ position: 'sticky', top: 0, zIndex: 1000 }}>
                 <SidebarTrigger />
               </Box>
@@ -77,6 +79,8 @@
                   {/* Board Routes */}
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
+
+                  <Route path='/calendar' element={<MyCalendar />} />
 
                   {/* Settings Routes */}
                   <Route path='/settings/account' element={<Settings />} />
