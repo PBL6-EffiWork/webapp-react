@@ -19,6 +19,7 @@ import { useConfirm } from "material-ui-confirm"
 import { useAppDispatch } from "../../hooks/useAppDispatch"
 import { logoutUserAPI } from "../../redux/user/userSlice"
 import { Button } from "../ui/button"
+import { Box, Typography } from "@mui/material"
 
 // Menu items.
 const items = [
@@ -70,8 +71,11 @@ export function AppSidebar() {
   }
   return (
     <Sidebar>
-      <SidebarHeader>
-        <Logo width={200}/>
+      <SidebarHeader >
+        <Box className="flex items-center justify-center">
+          <Logo width={30} height={30} />
+          <span className="ml-2 font-semibold">Effiwork</span>
+        </Box>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -81,7 +85,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url}>
-                      <item.icon />
+                      <item.icon className="text-xl" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -91,7 +95,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter>
+        {/* <SidebarFooter>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton>
@@ -103,7 +107,7 @@ export function AppSidebar() {
               side="top"
               className="w-[--radix-popper-anchor-width]"
             >
-              {/* <DropdownMenuItem>
+              <DropdownMenuItem>
                 <span>Account</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -111,7 +115,7 @@ export function AppSidebar() {
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <span>Sign out</span>
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
               {profileItems.map((item) => (
                 <DropdownMenuItem key={item.title} asChild>
                   {item.url ? (
@@ -129,7 +133,7 @@ export function AppSidebar() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-      </SidebarFooter>
+        </SidebarFooter> */}
     </Sidebar>
   )
 }

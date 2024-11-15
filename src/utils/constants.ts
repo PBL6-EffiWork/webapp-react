@@ -12,7 +12,6 @@ if (process.env.BUILD_MODE === 'dev') {
 if (process.env.BUILD_MODE === 'production') {
   apiRoot = 'http://18.207.127.179:3000'
 }
-console.log('🚀 ~ file: constants.js:7 ~ apiRoot:', apiRoot)
 export const API_ROOT = apiRoot
 
 export const DEFAULT_PAGE = 1

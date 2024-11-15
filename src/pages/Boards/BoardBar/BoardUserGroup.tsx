@@ -7,10 +7,11 @@ import Popover from '@mui/material/Popover'
 interface BoardUserGroupProps {
   boardUsers?: any[];
   limit?: number;
+  size?: number;
 }
 
 
-function BoardUserGroup({ boardUsers = [], limit = 6 }: BoardUserGroupProps) {
+function BoardUserGroup({ boardUsers = [], limit = 6, size = 34 }: BoardUserGroupProps) {
   /**
    * Xử lý Popover để ẩn hoặc hiện toàn bộ user trên một cái popup, tương tự docs để tham khảo ở đây:
    * https://mui.com/material-ui/react-popover/
@@ -32,7 +33,7 @@ function BoardUserGroup({ boardUsers = [], limit = 6 }: BoardUserGroupProps) {
           return (
             <Tooltip title={user?.displayName} key={index}>
               <Avatar
-                sx={{ width: 34, height: 34, cursor: 'pointer' }}
+                sx={{ width: size, height: size, cursor: 'pointer' }}
                 alt="Effiwork"
                 src={user?.avatar}
               />
@@ -78,7 +79,7 @@ function BoardUserGroup({ boardUsers = [], limit = 6 }: BoardUserGroupProps) {
           {boardUsers.map((user, index) =>
             <Tooltip title={user?.displayName} key={index}>
               <Avatar
-                sx={{ width: 34, height: 34, cursor: 'pointer' }}
+                sx={{ width: size, height: size, cursor: 'pointer' }}
                 alt="Effiwork"
                 src={user?.avatar}
               />

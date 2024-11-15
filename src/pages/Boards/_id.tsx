@@ -27,6 +27,7 @@ import React from 'react'
 import BoardTable from './BoardTable/BoardTable'
 import { Column } from '../../interfaces/column'
 import { Card } from '../../interfaces/card'
+import { loadMembersBoardThunk } from '../../redux/board/boardSlice'
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -70,6 +71,7 @@ function Board() {
     }
 
     dispatch(fetchBoardDetailsAPI(boardId as string))
+    dispatch(loadMembersBoardThunk(boardId as string))
   }, [dispatch, boardId])
 
   useEffect(() => {
@@ -192,12 +194,12 @@ function Board() {
         <Tabs value={value} onChange={handleChange} aria-label="dashboard tabs">
           <Tab label="Board" />
           <Tab label="Table" />
-          <Tab label="Timeline" />
+          {/* <Tab label="Timeline" /> */}
         </Tabs>
       </Box>
       {/* Nội dung từng Tab */}
       <TabPanel value={value} index={0}>
-        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+        <Box sx={{ flexGrow: 1, overflow: 'auto', background: 'white', padding: 2, borderRadius: 2 }}>
           <BoardContent
             board={board}
             moveColumns={moveColumns}
@@ -207,8 +209,8 @@ function Board() {
         </Box>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-          <BoardTable data={columns} />
+        <Box sx={{ flexGrow: 1, overflow: 'auto', background: 'white', padding: 2, borderRadius: 2 }}>
+          <BoardTable data={columns} boardId={board._id} />
         </Box>
       </TabPanel>
       <TabPanel value={value} index={2}>

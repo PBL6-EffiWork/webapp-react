@@ -26,15 +26,15 @@ const historySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(loadHistoryCardThunk.fulfilled, (state, action) => {
-      console.log(action.payload);
+      // console.log(action.payload);
       const { cardId, histories } = action.payload
       state.historiesCard[cardId] = histories
     }),
     builder.addCase(loadHistoryCardThunk.rejected, (state, action) => {
-      console.log(action.error)
+      // console.log(action.error)
     }),
     builder.addCase(loadHistoryCardThunk.pending, (state) => {
-      console.log('loading')
+      // console.log('loading')
     })
   }
 })

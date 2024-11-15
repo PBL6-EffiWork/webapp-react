@@ -1,14 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-// Define the structure for the active card data
-interface Card {
-  _id: string
-  id: string
-  title: string
-  description: string
-  [key: string]: any
-  // Add other fields as needed
-}
+import { Card } from '../../interfaces/card'
 
 // Define the structure of the initial state
 interface ActiveCardState {

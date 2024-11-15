@@ -1,4 +1,4 @@
-import { Card as MuiCard } from '@mui/material'
+import { Box, Card as MuiCard } from '@mui/material'
 import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
 import CardMedia from '@mui/material/CardMedia'
@@ -12,22 +12,90 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { updateCurrentActiveCard, showModalActiveCard } from '../../../redux/activeCard/activeCardSlice'
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { selectBoardMembersId } from '../../../redux/board/boardSlice'
+import { Card as ICard } from '../../../interfaces/card'
+import BoardUserGroup from '../BoardBar/BoardUserGroup'
+import { loadCommentsThunk, selectCommentsByCardId } from '../../../redux/comment/commentSlice'
+import { WatchIcon } from 'lucide-react'
+import { CheckBox, CheckBoxOutlineBlankOutlined } from '@mui/icons-material'
+import color from '../../../constants/color'
+import { updateCardDetailsAPI } from '../../../apis'
+import { updateCardInBoard } from '../../../redux/activeBoard/activeBoardSlice'
 
 interface CardProps {
-  card: {
-    _id: string;
-    memberIds?: string[];
-    comments?: string[];
-    attachments?: string[];
-    cover?: string;
-    title?: string;
-    FE_PlaceholderCard?: boolean;
-  };
+  card: ICard;
 }
+
+const CardDate = ({ card }: CardProps) => {
+  const dispatch = useAppDispatch();
+
+  const convertDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return `${date.getDate()} ${date.toLocaleString('default', { month: 'short' })}`;
+  };
+
+  const callApiUpdateCard = async (updateData: any) => {
+    const updatedCard = await updateCardDetailsAPI(card?._id, updateData);
+    dispatch(updateCurrentActiveCard(updatedCard));
+    dispatch(updateCardInBoard(updatedCard));
+    return updatedCard;
+  };
+
+  const isCardDue = new Date().getTime() > card.dueDate;
+  const isNearDue = new Date(card.dueDate).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000;
+  
+  return (
+    <Box
+      onClick={(e) => {
+        e.stopPropagation();
+        callApiUpdateCard({ isDone: !card.isDone });
+      }}
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        '&:hover .checkbox': {
+          display: 'block',
+        },
+        '&:hover .watch': {
+          display: 'none',
+        },
+        marginLeft: 1,
+        width: 'fit-content',
+        paddingY: 0.5,
+        paddingX: 1,
+        color: card.isDone || isCardDue ? 'white' : 'black', // Set text color based on card status
+        borderRadius: 1,
+        backgroundColor: (theme) => {
+          if (card.isDone) {
+            return color.success[80];
+          }
+          if (isNearDue) {
+            return color.warning[50];
+          }
+          return isCardDue ? color.danger[30] : 'white';
+        },
+      }}
+    >
+      <Box className="watch" sx={{ display: 'block' }}>
+        <WatchIcon />
+      </Box>
+      <Box className="checkbox" sx={{ display: 'none' }}>
+        {card.isDone ? <CheckBox /> : <CheckBoxOutlineBlankOutlined />}
+      </Box>
+      <Typography>{`${convertDate(card.startDate)} - ${convertDate(card.dueDate)}`}</Typography>
+    </Box>
+  );
+};
+
+
 
 function Card({ card }: CardProps) {
   const dispatch = useAppDispatch()
+  const membersBoard = useSelector(selectBoardMembersId(card.boardId))
+  const comments = useSelector(selectCommentsByCardId(card._id))
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card._id,
@@ -43,16 +111,17 @@ function Card({ card }: CardProps) {
     border: isDragging ? '1px solid #2ecc71' : undefined
   }
 
-  const shouldShowCardActions = () => {
-    return !!card?.memberIds?.length || !!card?.comments?.length || !!card?.attachments?.length
-  }
-
   const setActiveCard = () => {
     // Cập nhật data cho cái activeCard trong Redux
     dispatch(updateCurrentActiveCard(card as any))
     // Hiện Modal ActiveCard lên
     dispatch(showModalActiveCard())
+
   }
+
+  useEffect(() => {
+    dispatch(loadCommentsThunk(card._id))
+  }, [])
 
   return (
     <MuiCard
@@ -73,19 +142,21 @@ function Card({ card }: CardProps) {
       <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
         <Typography>{card?.title}</Typography>
       </CardContent>
-      {shouldShowCardActions() &&
-        <CardActions sx={{ p: '0 4px 8px 4px' }}>
-          {!!card?.memberIds?.length &&
-            <Button size="small" startIcon={<GroupIcon />}>{card?.memberIds?.length}</Button>
-          }
-          {!!card?.comments?.length &&
-            <Button size="small" startIcon={<CommentIcon />}>{card?.comments?.length}</Button>
-          }
-          {!!card?.attachments?.length &&
-            <Button size="small" startIcon={<AttachmentIcon />}>{card?.attachments?.length}</Button>
-          }
-        </CardActions>
+      {
+        !!card?.dueDate && <CardDate card={card} />
       }
+      {!!comments?.length &&
+        <Button size="medium" startIcon={<CommentIcon />}>{comments?.length}</Button>
+      }
+      {!!card?.attachments?.length &&
+        <Button size="medium" startIcon={<AttachmentIcon />}>{card?.attachments?.length}</Button>
+      }
+      <Box sx={{ display: 'flex', flexDirection:'row-reverse', alignItems: 'center', paddingBottom: 1, paddingRight: 1 }}>
+        {!!card?.memberIds?.length &&
+          // <Button size="small" startIcon={<GroupIcon />}>{card?.memberIds?.length}</Button>
+          <BoardUserGroup boardUsers={membersBoard} limit={3} />
+        }
+      </Box>
     </MuiCard>
   )
 }

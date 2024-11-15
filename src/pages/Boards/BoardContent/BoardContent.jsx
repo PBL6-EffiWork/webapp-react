@@ -385,10 +385,10 @@ function BoardContent({
       onDragEnd={handleDragEnd}
     >
       <Box sx={{
-        bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#ffffff'),
+        bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#ffffff' : '#ffffff'),
         // width: '100%',
         height: (theme) => theme.Effiwork.boardContentHeight,
-        p: '10px 0',
+        // p: '10px 0',
         overflowX: 'auto', // Cho phép cuộn ngang
         overflowY: 'hidden', // Ẩn cuộn dọc nếu không cần thiết
         maxWidth: '100%',
