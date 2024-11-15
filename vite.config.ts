@@ -5,6 +5,9 @@ import path from 'path'
 
 export default defineConfig({
   base: '/',
+  define: {
+    'process.env': process.env
+  },
   plugins: [
     react(),
     svgr()
