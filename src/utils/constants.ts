@@ -6,12 +6,12 @@ let apiRoot = ''
 if (process.env.BUILD_MODE === 'dev') {
   // apiRoot = 'http://localhost:8017'
   // apiRoot = 'http://18.207.127.179:3000'
-  apiRoot = 'http://api.tusgino.tech'
+  apiRoot = 'https://api.tusgino.tech'
 }
 
 // Môi trường Production sẽ cần api endpoint chuẩn của các bạn
 if (process.env.BUILD_MODE === 'production') {
-  apiRoot = 'http://api.tusgino.tech'
+  apiRoot = 'https://api.tusgino.tech'
 }
 export const API_ROOT = apiRoot
 
