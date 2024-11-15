@@ -117,31 +117,31 @@ function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Top 5 Khách hàng</CardTitle>
+              <CardTitle>Top 5 tasks about to expire</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Hạng</TableHead>
-                    <TableHead>Tên</TableHead>
-                    <TableHead>Tổng chi tiêu</TableHead>
-                    <TableHead className="text-right">Lần mua gần nhất</TableHead>
+                    <TableHead className="w-[100px]">Top</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Due date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {[
-                    { rank: 1, name: "Nguyễn Văn A", spend: "5.230.000 ₫", lastPurchase: "15/11/2023" },
-                    { rank: 2, name: "Trần Thị B", spend: "4.180.000 ₫", lastPurchase: "14/11/2023" },
-                    { rank: 3, name: "Lê Văn C", spend: "3.950.000 ₫", lastPurchase: "13/11/2023" },
-                    { rank: 4, name: "Phạm Thị D", spend: "3.640.000 ₫", lastPurchase: "12/11/2023" },
-                    { rank: 5, name: "Hoàng Văn E", spend: "3.470.000 ₫", lastPurchase: "11/11/2023" },
+                    { rank: 1, name: "[BE] add new feature", status: "In progress", dueDate: "15/11/2024" },
+                    { rank: 2, name: "[FE] add new interface", status: "In progress", dueDate: "14/11/2024" },
+                    { rank: 3, name: "[BE] add new function", status: "In progress", dueDate: "13/11/2024" },
+                    { rank: 4, name: "[CICD] deploy on AWS", status: "In progress", dueDate: "12/11/2024" },
+                    { rank: 5, name: "[FE] create dashboard", status: "In progress", dueDate: "11/11/2024" },
                   ].map((customer) => (
                     <TableRow key={customer.rank}>
                       <TableCell className="font-medium">{customer.rank}</TableCell>
                       <TableCell>{customer.name}</TableCell>
-                      <TableCell>{customer.spend}</TableCell>
-                      <TableCell className="text-right">{customer.lastPurchase}</TableCell>
+                      <TableCell>{customer.status}</TableCell>
+                      <TableCell className="text-right">{customer.dueDate}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -151,31 +151,31 @@ function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Top 5 Sản phẩm bán chạy</CardTitle>
+              <CardTitle>Top 5 projects about to be completed</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[100px]">Hạng</TableHead>
-                    <TableHead>Tên sản phẩm</TableHead>
-                    <TableHead>Số lượng bán</TableHead>
-                    <TableHead className="text-right">Doanh thu</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>StartDate</TableHead>
+                    <TableHead className="text-right">Process</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {[
-                    { rank: 1, name: "Sản phẩm X", quantity: 1200, revenue: "120.000.000 ₫" },
-                    { rank: 2, name: "Sản phẩm Y", quantity: 950, revenue: "95.000.000 ₫" },
-                    { rank: 3, name: "Sản phẩm Z", quantity: 820, revenue: "82.000.000 ₫" },
-                    { rank: 4, name: "Sản phẩm W", quantity: 700, revenue: "70.000.000 ₫" },
-                    { rank: 5, name: "Sản phẩm V", quantity: 650, revenue: "65.000.000 ₫" },
+                    { rank: 1, name: "Project 1", startDate: "15/11/2024", process: "90%" },
+                    { rank: 2, name: "Project 2", startDate: "15/11/2024", process: "95%" },
+                    { rank: 3, name: "Project 3", startDate: "15/11/2024", process: "92%" },
+                    { rank: 4, name: "Project 4", startDate: "15/11/2024", process: "91%" },
+                    { rank: 5, name: "Project 5", startDate: "15/11/2024", process: "94%" },
                   ].map((product) => (
                     <TableRow key={product.rank}>
                       <TableCell className="font-medium">{product.rank}</TableCell>
                       <TableCell>{product.name}</TableCell>
-                      <TableCell>{product.quantity}</TableCell>
-                      <TableCell className="text-right">{product.revenue}</TableCell>
+                      <TableCell>{product.startDate}</TableCell>
+                      <TableCell className="text-right">{product.process}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
