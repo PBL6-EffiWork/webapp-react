@@ -34,6 +34,10 @@ import {
 import { Card } from "../../../interfaces/card"
 import { Column } from "../../../interfaces/column"
 import { BoardTableRow } from "../../../interfaces/table"
+import { useSelector } from "react-redux"
+import { selectBoardMembersId } from "../../../redux/board/boardSlice"
+import { User } from "../../../interfaces/user"
+import BoardUserGroup from "../BoardBar/BoardUserGroup"
 
 const columns: ColumnDef<BoardTableRow>[] = [
   {
@@ -50,8 +54,8 @@ const columns: ColumnDef<BoardTableRow>[] = [
     accessorKey: "members",
     header: "Members",
     cell: ({ row }) => {
-      const members = row.getValue("members") as string[] | undefined
-      return <div>{members?.join(", ") || "No members"}</div>
+      const members = row.getValue("members") as User[] | undefined
+      return <BoardUserGroup boardUsers={members} limit={3} size={28} />
     },
   },
   {
@@ -120,11 +124,12 @@ const columns: ColumnDef<BoardTableRow>[] = [
   },
 ]
 
-export default function CardListTable({ data }: { data: Column[] }) {
+export default function CardListTable({ data, boardId }: { data: Column[], boardId: string }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const members = useSelector(selectBoardMembersId(boardId))
 
   const tableData: BoardTableRow[] = React.useMemo(() => {
     return data.flatMap((column) =>
@@ -132,7 +137,7 @@ export default function CardListTable({ data }: { data: Column[] }) {
         id: card._id,
         title: card.title,
         status: column.title,
-        members: card.memberIds,
+        members: members,
         startDate: card.startDate,
         dueDate: card.dueDate,
       }))

@@ -11,6 +11,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import { createSearchParams, useNavigate } from 'react-router-dom'
 import { fetchBoardsAPI } from '../../../apis'
 import { useDebounceFn } from '../../../customHooks/useDebounceFn'
+import colors from '@/constants/color'
 
 /**
  * Hướng dẫn & ví dụ cái Autocomplele của MUI ở đây:
@@ -105,26 +106,26 @@ function AutoCompleteSearchBoard() {
             ...params.InputProps,
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'white' }} />
+                <SearchIcon sx={{ color: colors.default[100] }} />
               </InputAdornment>
             ),
             endAdornment: (
               <>
-                {loading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : null}
+                {loading ? <CircularProgress sx={{ color: colors.default[100] }} size={20} /> : null}
                 {params.InputProps.endAdornment}
               </>
             )
           }}
           sx={{
-            '& label': { color: 'white' },
-            '& input': { color: 'white' },
-            '& label.Mui-focused': { color: 'white' },
+            '& label': { color: colors.default[100] },
+            '& input': { color: colors.default[100] },
+            '& label.Mui-focused': { color: colors.default[100] },
             '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'white' },
-              '&:hover fieldset': { borderColor: 'white' },
-              '&.Mui-focused fieldset': { borderColor: 'white' }
+              '& fieldset': { borderColor: colors.default[100] },
+              '&:hover fieldset': { borderColor: colors.default[100] },
+              '&.Mui-focused fieldset': { borderColor: colors.default[100] }
             },
-            '.MuiSvgIcon-root': { color: 'white' }
+            '.MuiSvgIcon-root': { color: colors.default[100] }
           }}
         />
       )}

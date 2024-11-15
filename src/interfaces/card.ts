@@ -7,7 +7,11 @@ export interface Card {
   memberIds: string[]
   createdAt: number
   updatedAt: number | null
-  startDate: number | null
-  dueDate: number | null
-  _destroy: boolean
+  startDate?: any
+  dueDate?: any
+  comments?: string[];
+  attachments?: string[];
+  FE_PlaceholderCard?: boolean;
+  isDone?: boolean;
+  [key: string]: any
 }

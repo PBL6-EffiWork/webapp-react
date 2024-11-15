@@ -37,10 +37,10 @@ const commentSlice = createSlice({
       state.comments[cardId] = comments
     }),
     builder.addCase(loadCommentsThunk.rejected, (state, action) => {
-      console.log(action.error)
+      // console.log(action.error)
     }),
     builder.addCase(loadCommentsThunk.pending, (state) => {
-      console.log('loading')
+      // console.log('loading')
     }),
     builder.addCase(addCommentThunk.fulfilled, (state, action) => {
       const { cardId, comments } = action.payload
@@ -48,10 +48,10 @@ const commentSlice = createSlice({
       state.comments[cardId] = [...oldComments, comments]
     }),
     builder.addCase(addCommentThunk.rejected, (state, action) => {
-      console.log(action.error)
+      // console.log(action.error)
     }),
     builder.addCase(addCommentThunk.pending, (state) => {
-      console.log('loading')
+      // console.log('loading')
     })
   }
 })

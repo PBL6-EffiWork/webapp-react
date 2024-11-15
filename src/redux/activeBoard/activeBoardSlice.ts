@@ -39,7 +39,7 @@ const initialState: ActiveBoardState = {
 export const fetchBoardDetailsAPI = createAsyncThunk(
   'activeBoard/fetchBoardDetailsAPI',
   async (boardId: string): Promise<Board> => {
-    console.log('fetchBoardDetailsAPI', boardId);
+    // console.log('fetchBoardDetailsAPI', boardId);
     const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/${boardId}`)
     return response.data
   }
@@ -87,7 +87,7 @@ export const activeBoardSlice = createSlice({
       state.error = undefined
     }),
     builder.addCase(fetchBoardDetailsAPI.rejected, (state, action) => {
-      console.log('fetchBoardDetailsAPI rejected', action);
+      // console.log('fetchBoardDetailsAPI rejected', action);
       state.currentActiveBoard = null;
       state.error = 'Failed to fetch board details';
     }),

@@ -56,6 +56,7 @@ import { loadHistoryCardThunk, selectHistoryByCardId } from '@/redux/historyCard
 import { addCommentThunk, loadCommentsThunk, selectCommentsByCardId } from '../../../redux/comment/commentSlice'
 import { Tab, Tabs } from '@mui/material'
 import CardHistory from './CardHistory'
+import { Checkbox } from '../../ui/checkbox'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -228,7 +229,7 @@ function ActiveCard() {
 
               {/* Feature 02: Xử lý các thành viên của Card */}
               <CardUserGroup
-                cardMemberIds={activeCard?.memberIds}
+                cardMemberIds={activeCard?.memberIds as string[]}
                 onUpdateCardMembers={onUpdateCardMembers}
               />
             </Box>
@@ -242,6 +243,15 @@ function ActiveCard() {
               }} onDateChange={(date) => {
                 onUpdateCardDate(date)
               }}/>
+
+              <Checkbox 
+                id='isDone' 
+                checked={activeCard?.isDone} 
+                className="border-border"
+                onCheckedChange={() => {
+                  callApiUpdateCard({ isDone: !activeCard?.isDone })
+                }}
+              ></Checkbox>
             </Box>
 
             <Box sx={{ mb: 3 }}>
@@ -260,7 +270,7 @@ function ActiveCard() {
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DvrOutlinedIcon />
-                <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Activity</Typography>
+                <Typography component="span" sx={{ fontWeight: '600' }}>Activity</Typography>
               </Box>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs

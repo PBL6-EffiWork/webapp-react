@@ -25,6 +25,7 @@ import { selectCurrentUser } from '../../../redux/user/userSlice'
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
+import colors from '@/constants/color'
 
 const BOARD_INVITATION_STATUS = {
   PENDING: 'PENDING',
@@ -64,7 +65,7 @@ function Notifications() {
     // Tạo một cái function xử lý khi nhận được sự kiện real-time, docs hướng dẫn:
     // https://socket.io/how-to/use-with-react
     const onReceiveNewInvitation = (invitation: any) => {
-      console.log('onReceiveNewInvitation:', invitation);
+      // console.log('onReceiveNewInvitation:', invitation);
       // Nếu thằng user đang đăng nhập hiện tại mà chúng ta lưu trong redux chính là thằng invitee trong bản ghi invitation
       if (invitation.inviteeId === currentUser._id) {
         // Bước 1: Thêm bản ghi invitation mới vào trong redux
@@ -115,7 +116,7 @@ function Notifications() {
           onClick={handleClickNotificationIcon}
         >
           <NotificationsNoneIcon sx={{
-            color: newNotification ? 'yellow' : 'white'
+            color: newNotification ? 'yellow' : colors.default[100]
           }} />
         </Badge>
       </Tooltip>
