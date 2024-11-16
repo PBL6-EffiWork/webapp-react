@@ -1,0 +1,24 @@
+name: Gemini AI Code Reviewer
+on:
+  issue_comment:
+    types: [created]
+permissions: write-all
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/tool-review')
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: LLM Code Reviewer
+        uses: tusgino/review-pr@v2
+        with: 
+          GITHUB_TOKEN: ${{ secrets.ACCESS_GITHUB_TOKEN  }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          HUMAN_LANGUAGE: ${{ vars.HUMAN_LANGUAGE }}
+          PRIMARY_MODEL: ${{ vars.PRIMARY_MODEL }}
