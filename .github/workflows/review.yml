@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
           
       - name: LLM Code Reviewer
-        uses: tusgino/review-pr@2.1
+        uses: tusgino/review-pr@v2.1
         with: 
           GITHUB_TOKEN: ${{ secrets.ACCESS_GITHUB_TOKEN  }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
