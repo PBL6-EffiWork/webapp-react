@@ -16,6 +16,8 @@
   import { Box } from '@mui/material'
 import Dashboard from './pages/Dashboard'
 
+  import MyCalendar from './pages/Calendar/Calendar';
+
   // Styled components for layout
   const MainLayout = styled('div')({
     display: 'flex',
@@ -61,7 +63,7 @@ import Dashboard from './pages/Dashboard'
           {currentUser && <AppSidebar />}
           <MainContent>
             {currentUser && <AppBar />}
-            {/* {currentUser && 
+            {/* {currentUser &&
               <Box sx={{ position: 'sticky', top: 0, zIndex: 1000 }}>
                 <SidebarTrigger />
               </Box>
@@ -79,6 +81,8 @@ import Dashboard from './pages/Dashboard'
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
                   <Route path='/dashboard' element={<Dashboard />} />
+
+                  <Route path='/calendar' element={<MyCalendar />} />
 
                   {/* Settings Routes */}
                   <Route path='/settings/account' element={<Settings />} />
