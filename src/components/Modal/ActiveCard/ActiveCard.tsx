@@ -5,26 +5,13 @@ import CreditCardIcon from '@mui/icons-material/CreditCard'
 import CancelIcon from '@mui/icons-material/Cancel'
 import Grid from '@mui/material/Unstable_Grid2'
 import Stack from '@mui/material/Stack'
-import Divider from '@mui/material/Divider'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
-import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
-import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined'
 import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined'
 import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined'
-import AspectRatioOutlinedIcon from '@mui/icons-material/AspectRatioOutlined'
-import AddToDriveOutlinedIcon from '@mui/icons-material/AddToDriveOutlined'
-import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
-import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined'
-import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined'
-import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined'
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined'
 import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
 import DvrOutlinedIcon from '@mui/icons-material/DvrOutlined'
-import { addDays, format } from "date-fns"
-import { DateRange } from "react-day-picker"
 
 import ToggleFocusInput from '@/components/Form/ToggleFocusInput'
 import VisuallyHiddenInput from '@/components/Form/VisuallyHiddenInput'
@@ -57,6 +44,9 @@ import { addCommentThunk, loadCommentsThunk, selectCommentsByCardId } from '../.
 import { Tab, Tabs } from '@mui/material'
 import CardHistory from './CardHistory'
 import { Checkbox } from '../../ui/checkbox'
+import Tasks from './Tasks'
+import { loadTasksThunk } from '../../../redux/task/taskSlice'
+import Checklist from './Checklist'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -78,9 +68,6 @@ const SidebarItem = styled(Box)(({ theme }) => ({
   }
 }))
 
-/**
- * Note: Modal là một low-component mà bọn MUI sử dụng bên trong những thứ như Dialog, Drawer, Menu, Popover. Ở đây dĩ nhiên chúng ta có thể sử dụng Dialog cũng không thành vấn đề gì, nhưng sẽ sử dụng Modal để dễ linh hoạt tùy biến giao diện từ con số 0 cho phù hợp với mọi nhu cầu nhé.
- */
 function ActiveCard() {
   const dispatch = useAppDispatch()
   const activeCard = useSelector(selectCurrentActiveCard)
@@ -94,27 +81,16 @@ function ActiveCard() {
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue)
   };
-  // const [date, setDate] = React.useState<DateRange | undefined>({
-  //   from: new Date(2024, 9, 15),
-  //   to: addDays(new Date(2024, 9, 15), 20),
-  // })
 
-  // Không dùng biến State để check đóng mở Modal nữa vì chúng ta sẽ check theo cái biến isShowModalActiveCard trong redux
-  // const [isOpen, setIsOpen] = useState(true)
-  // const handleOpenModal = () => setIsOpen(true)
   const handleCloseModal = () => {
-    // setIsOpen(false)
     dispatch(clearAndHideCurrentActiveCard())
   }
 
-  // Func gọi API dùng chung cho các trường hợp update card title, description, cover, comment...vv
   const callApiUpdateCard = async (updateData: any) => {
     const updatedCard = await updateCardDetailsAPI(activeCard?._id, updateData)
 
-    // B1: Cập nhật lại cái card đang active trong modal hiện tại
     dispatch(updateCurrentActiveCard(updatedCard))
 
-    // B2: Cập nhật lại cái bản ghi card trong cái activeBoard (nested data)
     dispatch(updateCardInBoard(updatedCard))
 
     return updatedCard
@@ -140,7 +116,6 @@ function ActiveCard() {
   }
 
   const onUploadCardCover = (event: any) => {
-    // console.log(event.target?.files[0])
     const error = singleFileValidator(event.target?.files[0])
     if (error) {
       toast.error(error)
@@ -149,16 +124,13 @@ function ActiveCard() {
     let reqData = new FormData()
     reqData.append('cardCover', event.target?.files[0])
 
-    // Gọi API...
     toast.promise(
       callApiUpdateCard(reqData).finally(() => event.target.value = ''),
       { pending: 'Updating...' }
     )
   }
 
-  // Dùng async await ở đây để component con CardActivitySection chờ và nếu thành công thì mới clear thẻ input comment
   const onAddCardComment = async (commentToAdd: any) => {
-    console.log('commentToAdd', commentToAdd);
     dispatch(addCommentThunk(commentToAdd))
   }
 
@@ -170,6 +142,7 @@ function ActiveCard() {
     if (activeCard) {
       dispatch(loadHistoryCardThunk(activeCard._id))
       dispatch(loadCommentsThunk(activeCard._id))
+      dispatch(loadTasksThunk(activeCard._id))
     }
   }, [activeCard])
 
@@ -177,7 +150,7 @@ function ActiveCard() {
     <Modal
       disableScrollLock
       open={isShowModalActiveCard}
-      onClose={handleCloseModal} // Sử dụng onClose trong trường hợp muốn đóng Modal bằng nút ESC hoặc click ra ngoài Modal
+      onClose={handleCloseModal}
       sx={{ overflowY: 'auto' }}>
       <Box sx={{
         position: 'relative',
@@ -268,6 +241,10 @@ function ActiveCard() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
+              <Tasks cardId={activeCard?._id} boardId={activeCard?.boardId} />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <DvrOutlinedIcon />
                 <Typography component="span" sx={{ fontWeight: '600' }}>Activity</Typography>
@@ -351,7 +328,17 @@ function ActiveCard() {
 
               <SidebarItem><AttachFileOutlinedIcon fontSize="small" />Attachment</SidebarItem>
               {/* <SidebarItem><LocalOfferOutlinedIcon fontSize="small" />Labels</SidebarItem> */}
-              <SidebarItem><TaskAltOutlinedIcon fontSize="small" />Checklist</SidebarItem>
+              <Checklist
+                cardId={activeCard?._id ?? ''}
+                boardId={activeCard?.boardId ?? ''}
+                button={
+                  <SidebarItem>
+                    <TaskAltOutlinedIcon fontSize="small" />
+                    Check list
+                  </SidebarItem>
+                }
+              />
+              
               <SidebarItem><AutoFixHighOutlinedIcon fontSize="small" />Custom Fields</SidebarItem>
             </Stack>
 

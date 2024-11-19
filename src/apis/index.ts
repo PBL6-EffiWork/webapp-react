@@ -1,3 +1,4 @@
+import { Subtask, Task } from '../interfaces/task'
 import authorizedAxiosInstance from '../utils/authorizeAxios'
 import { API_ROOT } from '../utils/constants'
 import { toast } from 'react-toastify'
@@ -109,3 +110,36 @@ export const inviteUserToBoardAPI = async (data: { inviteeEmail: any; boardId: a
   toast.success('User invited to board successfully!')
   return response.data
 }
+
+/** Tasks */
+export const getTasksAPI = async (cardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/tasks/${cardId}`)
+  return response.data
+}
+
+export const createTaskAPI = async (newTaskData: Task) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/tasks`, newTaskData)
+  return response.data
+}
+
+export const removeTaskAPI = async (taskId: string) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/tasks/${taskId}`)
+  return response.data
+}
+
+/** Subtasks */
+export const createSubtaskAPI = async (newSubtaskData: Subtask) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/subtasks`, newSubtaskData)
+  return response.data
+}
+
+export const updateSubtaskAPI = async (subtaskId: string, updateData: any) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/subtasks/${subtaskId}`, updateData)
+  return response.data
+}
+
+export const removeSubtaskAPI = async (subtaskId: string) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/subtasks/${subtaskId}`)
+  return response.data
+}
+
