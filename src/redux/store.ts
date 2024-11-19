@@ -16,6 +16,7 @@ import storage from 'redux-persist/lib/storage' // default là localstorage
 import { historiesReducer } from './historyCard/historyCardSlice'
 import { commentReducer } from './comment/commentSlice'
 import { boardReducer } from './board/boardSlice'
+import { taskReducer } from './task/taskSlice'
 
 // Cấu hình persist
 const rootPersistConfig = {
@@ -34,6 +35,7 @@ const reducers = combineReducers({
   comments: commentReducer,
   notifications: notificationsReducer,
   board: boardReducer,
+  tasks: taskReducer,
 })
 
 // Thực hiện persist Reducer
