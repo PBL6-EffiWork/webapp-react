@@ -1,6 +1,8 @@
+import { Subtask, Task } from '../interfaces/task'
 import authorizedAxiosInstance from '../utils/authorizeAxios'
 import { API_ROOT } from '../utils/constants'
 import { toast } from 'react-toastify'
+import axios from 'axios';
 
 
 /** Boards */
@@ -109,3 +111,62 @@ export const inviteUserToBoardAPI = async (data: { inviteeEmail: any; boardId: a
   toast.success('User invited to board successfully!')
   return response.data
 }
+
+/** Tasks */
+export const getTasksAPI = async (cardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/tasks/${cardId}`)
+  return response.data
+}
+
+export const createTaskAPI = async (newTaskData: Task) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/tasks`, newTaskData)
+  return response.data
+}
+
+export const removeTaskAPI = async (taskId: string) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/tasks/${taskId}`)
+  return response.data
+}
+
+/** Subtasks */
+export const createSubtaskAPI = async (newSubtaskData: Subtask) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/subtasks`, newSubtaskData)
+  return response.data
+}
+
+export const updateSubtaskAPI = async (subtaskId: string, updateData: any) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/subtasks/${subtaskId}`, updateData)
+  return response.data
+}
+
+export const removeSubtaskAPI = async (subtaskId: string) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/subtasks/${subtaskId}`)
+  return response.data
+}
+
+export const countUser = async () => {
+  try {
+    const response = await axios.get(`${API_ROOT}/v1/users/count`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const countBoard = async (memberID: string) => {
+  try {
+    const response = await axios.get(`${API_ROOT}/v1/boards/helpers/count/${memberID}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const top5Cards = async (memberId: string): Promise<any> => {
+  try {
+    const response = await axios.get(`${API_ROOT}/v1/cards/top5/${memberId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
