@@ -47,6 +47,7 @@ import { Checkbox } from '../../ui/checkbox'
 import Tasks from './Tasks'
 import { loadTasksThunk } from '../../../redux/task/taskSlice'
 import Checklist from './Checklist'
+import { BookAIcon, BookDashed } from 'lucide-react'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -241,6 +242,10 @@ function ActiveCard() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <BookAIcon />
+                <Typography component="span" sx={{ fontWeight: '600' }}>Checklist</Typography>
+              </Box>
               <Tasks cardId={activeCard?._id} boardId={activeCard?.boardId} />
             </Box>
 

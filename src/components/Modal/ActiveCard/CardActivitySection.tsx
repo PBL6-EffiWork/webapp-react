@@ -40,8 +40,6 @@ function CardActivitySection({ cardId ,cardComments = [], onAddCardComment }: Ca
     }
   }, [cardId, currentUser, onAddCardComment])
 
-  console.log(cardComments);
-
   return (
     <Box sx={{ mt: 2 }}>
       {/* Xử lý thêm comment vào Card */}
@@ -61,43 +59,45 @@ function CardActivitySection({ cardId ,cardComments = [], onAddCardComment }: Ca
         />
       </Box>
 
-      {/* Hiển thị danh sách các comments */}
-      {!cardComments || cardComments.length === 0 &&
-        <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No activity found!</Typography>
-      }
-      {cardComments.map((comment, index) =>
-        <Box sx={{ display: 'flex', gap: 1, width: '100%', mb: 1.5 }} key={index}>
-          <Tooltip title="Effiwork">
-            <Avatar
-              sx={{ width: 36, height: 36, cursor: 'pointer' }}
-              alt="Effiwork"
-              src={comment.avatar}
-            />
-          </Tooltip>
-          <Box sx={{ width: 'inherit' }}>
-            <Typography component="span" sx={{ fontWeight: 'bold', mr: 1 }}>
-              {comment.userDisplayName}
-            </Typography>
+      <Box className="max-h-[300px] overflow-auto">
+        {/* Hiển thị danh sách các comments */}
+        {!cardComments || cardComments.length === 0 &&
+          <Typography sx={{ pl: '45px', fontSize: '14px', fontWeight: '500', color: '#b1b1b1' }}>No comments!</Typography>
+        }
+        {cardComments.map((comment, index) =>
+          <Box sx={{ display: 'flex', gap: 1, width: '100%', mb: 1.5 }} key={index}>
+            <Tooltip title="Effiwork">
+              <Avatar
+                sx={{ width: 36, height: 36, cursor: 'pointer' }}
+                alt="Effiwork"
+                src={comment.avatar}
+              />
+            </Tooltip>
+            <Box sx={{ width: 'inherit' }}>
+              <Typography component="span" sx={{ fontWeight: 'bold', mr: 1 }}>
+                {comment.userDisplayName}
+              </Typography>
 
-            <Typography component="span" sx={{ fontSize: '12px' }}>
-              {moment(comment.createdAt).format('llll')}
-            </Typography>
+              <Typography component="span" sx={{ fontSize: '12px' }}>
+                {moment(comment.createdAt).format('llll')}
+              </Typography>
 
-            <Box sx={{
-              display: 'block',
-              bgcolor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : 'white',
-              p: '8px 12px',
-              mt: '4px',
-              border: '0.5px solid rgba(0, 0, 0, 0.2)',
-              borderRadius: '4px',
-              wordBreak: 'break-word',
-              boxShadow: '0 0 1px rgba(0, 0, 0, 0.2)'
-            }}>
-              {comment.content}
+              <Box sx={{
+                display: 'block',
+                bgcolor: (theme) => theme.palette.mode === 'dark' ? '#33485D' : 'white',
+                p: '8px 12px',
+                mt: '4px',
+                border: '0.5px solid rgba(0, 0, 0, 0.2)',
+                borderRadius: '4px',
+                wordBreak: 'break-word',
+                boxShadow: '0 0 1px rgba(0, 0, 0, 0.2)'
+              }}>
+                {comment.content}
+              </Box>
             </Box>
           </Box>
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
   )
 }

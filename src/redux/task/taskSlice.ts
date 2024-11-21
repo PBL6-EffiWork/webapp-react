@@ -6,6 +6,7 @@ import {
   createSubtaskAPI, 
   createTaskAPI, 
   getTasksAPI, 
+  removeTaskAPI, 
   updateSubtaskAPI 
 } from "../../apis";
 
@@ -77,6 +78,22 @@ export const updateSubtaskThunk = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update subtask');
+    }
+  }
+);
+
+// Thunk to delete a task
+export const deleteTaskThunk = createAsyncThunk(
+  'task/deleteTask',
+  async ({ taskId, cardId }: { taskId: string, cardId: string }, { rejectWithValue }) => {
+    try {
+      await removeTaskAPI(taskId);
+      return {
+        taskId,
+        cardId,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete task');
     }
   }
 );
@@ -157,7 +174,15 @@ export const taskSlice = createSlice({
       // Handle rejected state for updating a subtask
       .addCase(updateSubtaskThunk.rejected, (state, action) => {
         state.error = action.payload as string || 'Failed to update subtask';
-      });
+      })
+      .addCase(deleteTaskThunk.fulfilled, (state, action) => {
+        const { taskId, cardId } = action.payload;
+        state.tasks[cardId] = state.tasks[cardId].filter(task => task._id !== taskId);
+        state.error = null;
+      })
+      .addCase(deleteTaskThunk.rejected, (state, action) => {
+        state.error = action.payload as string || 'Failed to delete task';
+      })
   },
 });
 
