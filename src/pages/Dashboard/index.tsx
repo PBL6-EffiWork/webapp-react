@@ -2,26 +2,26 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { dashboardHelper } from './services/api';
+import { countBoard, countUser, top5Cards } from '../../apis/index';
 
 function Dashboard({id}: any) {
     const [totalUsers, setTotalUsers] = useState([]);
     useEffect(() => {
-        dashboardHelper.countUser()
+        countUser()
         .then(data => setTotalUsers(data.total))
         .catch(error => console.error(error));
     }, []);
 
     const [totalProjects, setTotalProjects] = useState([]);
     useEffect(() => {
-        dashboardHelper.countBoard(id)
+        countBoard(id)
         .then(data => setTotalProjects(data.total))
         .catch(error => console.error(error));
     }, []); 
 
     const [topcards, setTopcards] = useState([]);
     useEffect(() => {
-        dashboardHelper.top5Cards(id)
+        top5Cards(id)
         .then(data => setTopcards(data))
         .catch(error => console.error(error));
     }, []);
