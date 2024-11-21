@@ -2,7 +2,6 @@ import { Subtask, Task } from '../interfaces/task'
 import authorizedAxiosInstance from '../utils/authorizeAxios'
 import { API_ROOT } from '../utils/constants'
 import { toast } from 'react-toastify'
-import axios from 'axios';
 
 
 /** Boards */
@@ -146,7 +145,7 @@ export const removeSubtaskAPI = async (subtaskId: string) => {
 
 export const countUser = async () => {
   try {
-    const response = await axios.get(`${API_ROOT}/v1/users/count`);
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/count`);
     return response.data;
   } catch (error) {
     throw error;
@@ -155,7 +154,7 @@ export const countUser = async () => {
 
 export const countBoard = async (memberID: string) => {
   try {
-    const response = await axios.get(`${API_ROOT}/v1/boards/helpers/count/${memberID}`);
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/helpers/count/${memberID}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -164,7 +163,7 @@ export const countBoard = async (memberID: string) => {
 
 export const top5Cards = async (memberId: string): Promise<any> => {
   try {
-    const response = await axios.get(`${API_ROOT}/v1/cards/top5/${memberId}`);
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/top5/${memberId}`);
     return response.data;
   } catch (error) {
     throw error;
