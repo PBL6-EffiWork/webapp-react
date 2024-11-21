@@ -143,3 +143,30 @@ export const removeSubtaskAPI = async (subtaskId: string) => {
   return response.data
 }
 
+export const countUser = async () => {
+  try {
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/count`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const countBoard = async (memberID: string) => {
+  try {
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/helpers/count/${memberID}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const top5Cards = async (memberId: string): Promise<any> => {
+  try {
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/top5/${memberId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+

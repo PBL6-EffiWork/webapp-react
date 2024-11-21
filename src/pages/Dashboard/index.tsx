@@ -2,23 +2,30 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { dashboardHelper } from './services/api';
+import { countBoard, countUser, top5Cards } from '../../apis/index';
 
-function Dashboard() {
+function Dashboard({id}: any) {
     const [totalUsers, setTotalUsers] = useState([]);
     useEffect(() => {
-        dashboardHelper.countUser()
+        countUser()
         .then(data => setTotalUsers(data.total))
         .catch(error => console.error(error));
     }, []);
 
     const [totalProjects, setTotalProjects] = useState([]);
     useEffect(() => {
-        dashboardHelper.countBoard()
+        countBoard(id)
         .then(data => setTotalProjects(data.total))
         .catch(error => console.error(error));
-    }, []);
+    }, []); 
 
+    const [topcards, setTopcards] = useState([]);
+    useEffect(() => {
+        top5Cards(id)
+        .then(data => setTopcards(data))
+        .catch(error => console.error(error));
+    }, []);
+    console.log(topcards)
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
       <main className="container mx-auto">
@@ -48,7 +55,7 @@ function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Users</CardTitle>
+              <CardTitle className="text-sm font-medium">TotalTasks</CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -71,7 +78,7 @@ function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Managers</CardTitle>
+              <CardTitle className="text-sm font-medium">Finished</CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -93,7 +100,7 @@ function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Events</CardTitle>
+              <CardTitle className="text-sm font-medium">Fail</CardTitle>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -125,23 +132,25 @@ function Dashboard() {
                   <TableRow>
                     <TableHead className="w-[100px]">Top</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Status</TableHead>
+                    {/* <TableHead>Status</TableHead> */}
                     <TableHead className="text-right">Due date</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {[
-                    { rank: 1, name: "[BE] add new feature", status: "In progress", dueDate: "15/11/2024" },
-                    { rank: 2, name: "[FE] add new interface", status: "In progress", dueDate: "14/11/2024" },
-                    { rank: 3, name: "[BE] add new function", status: "In progress", dueDate: "13/11/2024" },
-                    { rank: 4, name: "[CICD] deploy on AWS", status: "In progress", dueDate: "12/11/2024" },
-                    { rank: 5, name: "[FE] create dashboard", status: "In progress", dueDate: "11/11/2024" },
-                  ].map((customer) => (
-                    <TableRow key={customer.rank}>
-                      <TableCell className="font-medium">{customer.rank}</TableCell>
-                      <TableCell>{customer.name}</TableCell>
-                      <TableCell>{customer.status}</TableCell>
-                      <TableCell className="text-right">{customer.dueDate}</TableCell>
+                  {topcards.map((card, index) => (
+                    <TableRow key={card.title}>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      {/* <TableCell>{card.cover}</TableCell> */}
+                      <TableCell>{card.title}</TableCell>
+                      <TableCell className="text-right">
+                        { 
+                          card.dueDate !== null ? 
+                          ( Math.floor((- Date.now() + new Date(card.dueDate).getTime()) / (1000 * 60 * 60 * 24)) === 0
+                            ? "Today"
+                            : `${Math.floor((- Date.now() + new Date(card.dueDate).getTime()) / (1000 * 60 * 60 * 24))} days`
+                          ) : "Today"
+                        }
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

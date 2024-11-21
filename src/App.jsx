@@ -80,7 +80,7 @@ import Dashboard from './pages/Dashboard'
                   {/* Board Routes */}
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
-                  <Route path='/dashboard' element={<Dashboard />} />
+                  <Route path='/dashboard' element={<Dashboard id={currentUser?._id} />} />
 
                   <Route path='/calendar' element={<MyCalendar />} />
 
