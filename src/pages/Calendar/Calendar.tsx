@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import authorizedAxiosInstance from '../../utils/authorizeAxios';
+import { API_ROOT } from '../../utils/constants';
 
 interface User {
     _id: string;
@@ -83,7 +84,7 @@ const MyCalendar: React.FC = () => {
         project_id: '',
     });
 
-    const API_BASE_URL = 'http://localhost:8017/v1';
+    const API_BASE_URL = `${API_ROOT}/v1`;
 
     useEffect(() => {
         const fetchUsers = async () => {

@@ -56,13 +56,13 @@ function BoardBar({ board }: { board: Board }) {
           label={capitalizeFirstLetter(board?.type)}
           clickable
         />
-        <Chip
+        {/* <Chip
           sx={MENU_STYLES}
           icon={<AddToDriveIcon />}
           label="Add To Google Drive"
           clickable
-        />
-        <Chip
+        /> */}
+        {/* <Chip
           sx={MENU_STYLES}
           icon={<BoltIcon />}
           label="Automation"
@@ -73,7 +73,7 @@ function BoardBar({ board }: { board: Board }) {
           icon={<FilterListIcon />}
           label="Filters"
           clickable
-        />
+        /> */}
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -81,7 +81,7 @@ function BoardBar({ board }: { board: Board }) {
         <InviteBoardUser boardId={board._id} />
 
         {/* Xử lý hiển thị danh sách thành viên của board */}
-        <BoardUserGroup boardUsers={board?.FE_allUsers} />
+        <BoardUserGroup boardUsers={board?.FE_allUsers} limit={1} boardId={board._id} />
       </Box>
     </Box>
   )
