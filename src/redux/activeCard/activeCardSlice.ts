@@ -31,6 +31,15 @@ export const activeCardSlice = createSlice({
     updateCurrentActiveCard: (state, action: PayloadAction<Card>) => {
       const fullCard = action.payload
       state.currentActiveCard = fullCard
+    },
+    updateCardColumn: (state, action: PayloadAction<{ nextColumnId: string }>) => {
+      const { nextColumnId } = action.payload
+      if (state.currentActiveCard) {
+        state.currentActiveCard = {
+          ...state.currentActiveCard,
+          columnId: nextColumnId
+        }
+      }
     }
   },
   extraReducers: (builder) => {}
@@ -40,7 +49,8 @@ export const activeCardSlice = createSlice({
 export const {
   clearAndHideCurrentActiveCard,
   updateCurrentActiveCard,
-  showModalActiveCard
+  showModalActiveCard,
+  updateCardColumn
 } = activeCardSlice.actions
 
 // Selectors

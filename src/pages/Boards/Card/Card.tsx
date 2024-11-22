@@ -23,9 +23,11 @@ import { CheckBox, CheckBoxOutlineBlankOutlined } from '@mui/icons-material'
 import color from '../../../constants/color'
 import { updateCardDetailsAPI } from '../../../apis'
 import { updateCardInBoard } from '../../../redux/activeBoard/activeBoardSlice'
+import { useSearchParams } from 'react-router-dom';
 
 interface CardProps {
   card: ICard;
+  activeCardId?: string;
 }
 
 const CardDate = ({ card }: CardProps) => {
@@ -44,7 +46,7 @@ const CardDate = ({ card }: CardProps) => {
   };
 
   const isCardDue = new Date().getTime() > card.dueDate;
-  const isNearDue = new Date(card.dueDate).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000;
+  const isNearDue = new Date(card.dueDate).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000 && !isCardDue;
   
   return (
     <Box
@@ -66,16 +68,16 @@ const CardDate = ({ card }: CardProps) => {
         width: 'fit-content',
         paddingY: 0.5,
         paddingX: 1,
-        color: card.isDone || isCardDue ? 'white' : 'black', // Set text color based on card status
+        color: card.isDone || isCardDue ? 'white' : 'black',
         borderRadius: 1,
         backgroundColor: (theme) => {
           if (card.isDone) {
             return color.success[80];
           }
           if (isNearDue) {
-            return color.warning[50];
+            return color.warning[80];
           }
-          return isCardDue ? color.danger[30] : 'white';
+          return isCardDue ? color.danger[80] : 'white';
         },
       }}
     >
@@ -91,11 +93,12 @@ const CardDate = ({ card }: CardProps) => {
 };
 
 
-
-function Card({ card }: CardProps) {
+function Card({ card, activeCardId }: CardProps) {
   const dispatch = useAppDispatch()
   const membersBoard = useSelector(selectBoardMembersId(card.boardId))
   const comments = useSelector(selectCommentsByCardId(card._id))
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card._id,
@@ -117,10 +120,15 @@ function Card({ card }: CardProps) {
     // Hiện Modal ActiveCard lên
     dispatch(showModalActiveCard())
 
+    setSearchParams({ cardId: card._id })
   }
 
   useEffect(() => {
     dispatch(loadCommentsThunk(card._id))
+
+    if (activeCardId === card._id) {
+      setActiveCard()
+    }
   }, [])
 
   return (
@@ -154,7 +162,7 @@ function Card({ card }: CardProps) {
       <Box sx={{ display: 'flex', flexDirection:'row-reverse', alignItems: 'center', paddingBottom: 1, paddingRight: 1 }}>
         {!!card?.memberIds?.length &&
           // <Button size="small" startIcon={<GroupIcon />}>{card?.memberIds?.length}</Button>
-          <BoardUserGroup boardUsers={membersBoard} limit={3} />
+          <BoardUserGroup boardUsers={membersBoard.filter(user => card.memberIds.includes(user._id))} limit={3} size={24} />
         }
       </Box>
     </MuiCard>

@@ -1,10 +1,11 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import authorizedAxiosInstance from '../../utils/authorizeAxios'
 import { API_ROOT } from '../../utils/constants'
 import { mapOrder } from '../../utils/sorts'
 import { isEmpty } from 'lodash'
 import { generatePlaceholderCard } from '../../utils/formatters'
 import { Column } from '../../interfaces/column'
+import { moveCardToDifferentColumnAPI } from '../../apis'
 
 // Define the structure of a Card, Column, and Board
 interface Card {
@@ -65,6 +66,52 @@ export const activeBoardSlice = createSlice({
           })
         }
       }
+    },
+    updateCardColumnInBoard: (state, action: PayloadAction<{ cardId: string, nextColumnId: string, currentColumnId: string }>) => {
+      const { cardId, nextColumnId, currentColumnId } = action.payload
+
+      if (!state.currentActiveBoard) return
+
+      // Find the columns
+      const currentColumn = state.currentActiveBoard.columns.find(column => column._id === currentColumnId)
+      const nextColumn = state.currentActiveBoard.columns.find(column => column._id === nextColumnId)
+
+      if (!currentColumn || !nextColumn) return
+
+      // Find and remove card from current column
+      const card = currentColumn.cards.find(card => card._id === cardId)
+      if (!card) return
+
+      // Update the columns
+      const updatedCurrentColumn = {
+        ...currentColumn,
+        cards: currentColumn.cards.filter(card => card._id !== cardId),
+        cardOrderIds: currentColumn.cardOrderIds.filter(id => id !== cardId)
+      }
+
+      const updatedNextColumn = {
+        ...nextColumn,
+        cards: [...nextColumn.cards, { ...card, columnId: nextColumnId }],
+        cardOrderIds: [...nextColumn.cardOrderIds, cardId]
+      }
+
+      // Update the state immutably
+      state.currentActiveBoard = {
+        ...state.currentActiveBoard,
+        columns: state.currentActiveBoard.columns.map(column => {
+          if (column._id === currentColumnId) return updatedCurrentColumn
+          if (column._id === nextColumnId) return updatedNextColumn
+          return column
+        })
+      }
+
+      moveCardToDifferentColumnAPI({
+        currentCardId: cardId,
+        prevColumnId: currentColumnId,
+        prevCardOrderIds: updatedCurrentColumn.cardOrderIds,
+        nextColumnId: nextColumnId,
+        nextCardOrderIds: updatedNextColumn.cardOrderIds
+      })
     }
   },
   extraReducers: (builder) => {
@@ -98,10 +145,19 @@ export const activeBoardSlice = createSlice({
 })
 
 // Export action creators
-export const { updateCurrentActiveBoard, updateCardInBoard } = activeBoardSlice.actions
+export const { updateCurrentActiveBoard, updateCardInBoard, updateCardColumnInBoard } = activeBoardSlice.actions
 
 // Selectors
-export const selectCurrentActiveBoard = (state: { activeBoard: ActiveBoardState }) => state.activeBoard.currentActiveBoard
+export const currentActiveBoard = (state: { activeBoard: ActiveBoardState }) => state.activeBoard
+export const selectCurrentActiveBoard = createSelector(
+  currentActiveBoard,
+  (board) => board.currentActiveBoard
+)
+
+export const selectColumnsOfBoard = createSelector(
+  selectCurrentActiveBoard,
+  (board) => board?.columns
+)
 
 export const selectError = (state: { activeBoard: ActiveBoardState }) => state.activeBoard.error
 

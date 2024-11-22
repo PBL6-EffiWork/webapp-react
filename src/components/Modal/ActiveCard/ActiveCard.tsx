@@ -47,6 +47,12 @@ import { Checkbox } from '../../ui/checkbox'
 import Tasks from './Tasks'
 import { loadTasksThunk } from '../../../redux/task/taskSlice'
 import Checklist from './Checklist'
+import { BookAIcon, BookDashed } from 'lucide-react'
+import { Switch } from '../../ui/switch'
+import { Label } from '../../ui/label'
+import { SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Select } from '../../ui/select'
+import SelectColumn from './SelectColumn'
+import { useSearchParams } from 'react-router-dom'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -75,6 +81,7 @@ function ActiveCard() {
   const currentUser = useSelector(selectCurrentUser)
   const comments = useSelector(selectCommentsByCardId(activeCard?._id))
   const histories = useSelector(selectHistoryByCardId(activeCard?._id))
+  const [searchParams, setSearchParams] = useSearchParams()
   
   const [currentTab, setCurrentTab] = React.useState(0) // Trạng thái tab hiện tại
 
@@ -84,6 +91,9 @@ function ActiveCard() {
 
   const handleCloseModal = () => {
     dispatch(clearAndHideCurrentActiveCard())
+    // Xóa cardId trong searchParams
+    searchParams.delete('cardId')
+    setSearchParams(searchParams)
   }
 
   const callApiUpdateCard = async (updateData: any) => {
@@ -207,24 +217,34 @@ function ActiveCard() {
               />
             </Box>
 
-            <Box sx={{ mb: 3, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}>
-              <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
+            <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className='flex items-center'>
+                <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
 
-              <DatePicker isShowLastDate={true} selectedDate={{
-                from: activeCard?.startDate,
-                to: activeCard?.dueDate
-              }} onDateChange={(date) => {
-                onUpdateCardDate(date)
-              }}/>
+                <DatePicker isShowLastDate={true} selectedDate={{
+                  from: activeCard?.startDate,
+                  to: activeCard?.dueDate
+                }} onDateChange={(date) => {
+                  onUpdateCardDate(date)
+                }}/>
+              </div>
 
-              <Checkbox 
-                id='isDone' 
-                checked={activeCard?.isDone} 
-                className="border-border"
-                onCheckedChange={() => {
-                  callApiUpdateCard({ isDone: !activeCard?.isDone })
-                }}
-              ></Checkbox>
+              <div className='flex items-center gap-2'>
+                <Label htmlFor='isDone'>Status</Label>
+                <Switch 
+                  id='isDone'
+                  checked={activeCard?.isDone} 
+                  onCheckedChange={() => {
+                    callApiUpdateCard({ isDone: !activeCard?.isDone })
+                  }}
+                />
+                {activeCard?.isDone ? 'Done' : 'Not Done'}
+                <SelectColumn 
+                  cardId={activeCard?._id} 
+                  currentColumnId={activeCard?.columnId}
+                  isShow={activeCard?.isDone}
+                />
+              </div>
             </Box>
 
             <Box sx={{ mb: 3 }}>
@@ -241,6 +261,10 @@ function ActiveCard() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <BookAIcon />
+                <Typography component="span" sx={{ fontWeight: '600' }}>Checklist</Typography>
+              </Box>
               <Tasks cardId={activeCard?._id} boardId={activeCard?.boardId} />
             </Box>
 
