@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import authorizedAxiosInstance from '../../utils/authorizeAxios';
+import { API_ROOT } from '../../utils/constants';
 
 interface User {
     _id: string;
@@ -33,7 +34,9 @@ interface Project {
 }
 
 interface MyEvent extends CalendarEvent {
-    _id: string;
+    _id: string;         // MongoDB ObjectId
+    event_id: string;    // UUID from backend
+    id?: string;         // ID for react-big-calendar (mapped from event_id)
     title: string;
     start_time: string;
     end_time: string;
@@ -59,6 +62,11 @@ const StyledButton = styled(Button)(({ theme }) => ({
     margin: '10px 0',
     backgroundColor: theme.palette.primary.main,
     color: '#fff',
+    borderRadius: '20px',
+    padding: '10px 20px',
+    textTransform: 'none',
+    fontSize: '1rem',
+    fontWeight: 'bold',
     '&:hover': {
         backgroundColor: theme.palette.primary.dark,
     },
@@ -83,7 +91,7 @@ const MyCalendar: React.FC = () => {
         project_id: '',
     });
 
-    const API_BASE_URL = 'http://localhost:8017/v1';
+    const API_BASE_URL = `${API_ROOT}/v1`;
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -109,6 +117,7 @@ const MyCalendar: React.FC = () => {
                 const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/events`);
                 const eventsFromAPI = response.data.map((event: any) => ({
                     ...event,
+                    id: event.event_id,
                     start: new Date(event.start_time),
                     end: new Date(event.end_time),
                 }));
@@ -160,7 +169,6 @@ const MyCalendar: React.FC = () => {
                 return;
             }
 
-            // Đảm bảo rằng 'title' là string
             const eventToAdd: Partial<MyEvent> = {
                 title: newEvent.title!,
                 start_time: newEvent.start_time!,
@@ -175,6 +183,8 @@ const MyCalendar: React.FC = () => {
                 const response = await authorizedAxiosInstance.post(`${API_BASE_URL}/events`, eventToAdd);
                 const createdEvent: MyEvent = {
                     _id: response.data._id,
+                    event_id: response.data.event_id,
+                    id: response.data.event_id,
                     title: response.data.title!,
                     start_time: response.data.start_time!,
                     end_time: response.data.end_time!,
@@ -185,10 +195,7 @@ const MyCalendar: React.FC = () => {
                     start: new Date(response.data.start_time!),
                     end: new Date(response.data.end_time!),
                 };
-                setEvents([
-                    ...events,
-                    createdEvent,
-                ]);
+                setEvents([...events, createdEvent]);
                 setOpen(false);
             } catch (error: any) {
                 console.error('Failed to save event:', error);
@@ -200,12 +207,27 @@ const MyCalendar: React.FC = () => {
     };
 
     const handleEventClick = (event: MyEvent) => {
-        console.log('Event clicked:', event); // Debugging
-        setSelectedEvent({ ...event }); // Create a copy to prevent direct state mutation
+        setSelectedEvent({ ...event });
         setOpenDetails(true);
     };
 
-    // Function to handle event update
+    const handleDelete = async () => {
+        if (selectedEvent) {
+            if (!window.confirm('Are you sure you want to delete this event?')) {
+                return;
+            }
+            try {
+                await authorizedAxiosInstance.delete(`${API_BASE_URL}/events/${selectedEvent.event_id}`);
+                setEvents(events.filter((event) => event.event_id !== selectedEvent.event_id));
+                setOpenDetails(false);
+                setSelectedEvent(null);
+            } catch (error: any) {
+                console.error('Failed to delete event:', error);
+                alert(`Failed to delete event: ${error.response?.data?.message || 'Please try again.'}`);
+            }
+        }
+    };
+
     const handleUpdate = async () => {
         if (
             selectedEvent?.title &&
@@ -221,71 +243,66 @@ const MyCalendar: React.FC = () => {
                 return;
             }
 
-            // Đảm bảo rằng 'title' là string
-            const updatedEvent: MyEvent = {
-                _id: selectedEvent._id,
-                title: selectedEvent.title!, // Sử dụng '!' để đảm bảo không undefined
-                start_time: selectedEvent.start_time!,
-                end_time: selectedEvent.end_time!,
-                user_ids: selectedEvent.user_ids!,
-                description: selectedEvent.description!,
-                event_type_id: selectedEvent.event_type_id!,
-                project_id: selectedEvent.project_id!,
-                start: new Date(selectedEvent.start_time!),
-                end: new Date(selectedEvent.end_time!),
+            const updatedEvent: Partial<MyEvent> = {
+                title: selectedEvent.title,
+                start_time: selectedEvent.start_time,
+                end_time: selectedEvent.end_time,
+                user_ids: selectedEvent.user_ids,
+                description: selectedEvent.description,
+                event_type_id: selectedEvent.event_type_id,
+                project_id: selectedEvent.project_id,
             };
 
             try {
-                const response = await authorizedAxiosInstance.put(`${API_BASE_URL}/events/${selectedEvent._id}`, updatedEvent);
-                const updatedEventFromAPI: MyEvent = {
-                    _id: response.data._id,
-                    title: response.data.title!,
-                    start_time: response.data.start_time!,
-                    end_time: response.data.end_time!,
-                    user_ids: response.data.user_ids!,
-                    description: response.data.description!,
-                    event_type_id: response.data.event_type_id!,
-                    project_id: response.data.project_id!,
-                    start: new Date(response.data.start_time!),
-                    end: new Date(response.data.end_time!),
-                };
-                const updatedEvents = events.map((event) =>
-                    event._id === selectedEvent._id
-                        ? updatedEventFromAPI
-                        : event
+                const response = await authorizedAxiosInstance.put(
+                    `${API_BASE_URL}/events/${selectedEvent.event_id}`,
+                    updatedEvent
                 );
-                setEvents(updatedEvents);
-                setOpenDetails(false);
-                setSelectedEvent(null);
+                console.log(response.data);
+                if (response.data) {
+                    const updatedEventFromAPI = response.data;
+                    setEvents((prevEvents) =>
+                        prevEvents.map((event) =>
+                            event.event_id === selectedEvent.event_id
+                                ? {
+                                    ...event,
+                                    ...updatedEventFromAPI,
+                                    start: new Date(updatedEventFromAPI.start_time),
+                                    end: new Date(updatedEventFromAPI.end_time),
+                                }
+                                : event
+                        )
+                    );
+                    setOpenDetails(false);
+                    alert('Event updated successfully');
+                } else {
+                    throw new Error('Invalid response format');
+                }
             } catch (error: any) {
-                console.error('Failed to update event:', error);
-                alert(`Failed to update event: ${error.response?.data?.message || 'Please try again.'}`);
+                console.error('Failed to update event:', error.response || error.message);
+                alert(`Failed to update event: ${error.response?.data?.message || 'Unknown error'}`);
             }
         } else {
             alert('Please fill in all required fields.');
         }
     };
 
-    // Function to handle event delete
-    const handleDelete = async () => {
-        if (selectedEvent) {
-            if (!window.confirm('Are you sure you want to delete this event?')) {
-                return;
-            }
-            try {
-                await authorizedAxiosInstance.delete(`${API_BASE_URL}/events/${selectedEvent._id}`);
-                setEvents(events.filter((event) => event._id !== selectedEvent._id));
-                setOpenDetails(false);
-                setSelectedEvent(null);
-            } catch (error: any) {
-                console.error('Failed to delete event:', error);
-                alert(`Failed to delete event: ${error.response?.data?.message || 'Please try again.'}`);
-            }
-        }
-    };
+    const eventStyleGetter = () => ({
+        style: {
+            backgroundColor: '#4CAF50',
+            color: '#ffffff',
+            borderRadius: '8px',
+            padding: '6px',
+            fontWeight: 'bold',
+            fontSize: '0.85rem',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+        },
+    });
 
     return (
-        <Box sx={{ padding: '20px', backgroundColor: '#f7f9fc', height: '100vh', boxSizing: 'border-box' }}>
+        <Box sx={{ padding: '20px', backgroundColor: '#f9f9f9', height: '100vh', boxSizing: 'border-box' }}>
             <StyledButton variant="contained" onClick={handleOpen}>
                 Add Event
             </StyledButton>
@@ -297,28 +314,25 @@ const MyCalendar: React.FC = () => {
                 style={{
                     height: '85%',
                     margin: '20px 0',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     backgroundColor: '#ffffff',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+                    padding: '15px',
                 }}
-                eventPropGetter={() => ({
+                views={[Views.MONTH, Views.WEEK, Views.DAY]}
+                popup
+                eventPropGetter={eventStyleGetter}
+                dayPropGetter={() => ({
                     style: {
-                        backgroundColor: '#5CDB95',
-                        color: '#fff',
-                        borderRadius: '4px',
-                        padding: '4px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer', // Ensures the pointer indicates the event is clickable
+                        border: '1px solid #e0e0e0',
+                        padding: '5px',
                     },
                 })}
-                views={[Views.MONTH, Views.WEEK, Views.DAY]}
                 onSelectEvent={handleEventClick}
             />
-            {/* Dialog for creating new event */}
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-                <DialogTitle sx={{ backgroundColor: '#5CDB95', color: '#fff' }}>Add New Event</DialogTitle>
+                <DialogTitle sx={{ backgroundColor: '#4CAF50', color: '#fff' }}>Add New Event</DialogTitle>
                 <DialogContent>
-                    {/* Form for adding event */}
                     <TextField
                         autoFocus
                         margin="dense"
@@ -430,10 +444,8 @@ const MyCalendar: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            {/* Dialog to view and edit event details */}
             <Dialog open={openDetails} onClose={handleDetailsClose} fullWidth maxWidth="sm">
-                <DialogTitle sx={{ backgroundColor: '#5CDB95', color: '#fff' }}>Event Details</DialogTitle>
+                <DialogTitle sx={{ backgroundColor: '#4CAF50', color: '#fff' }}>Event Details</DialogTitle>
                 <DialogContent>
                     {selectedEvent && (
                         <>
@@ -554,7 +566,6 @@ const MyCalendar: React.FC = () => {
             </Dialog>
         </Box>
     );
-
 };
 
 export default MyCalendar;
