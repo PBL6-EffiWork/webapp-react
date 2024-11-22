@@ -23,7 +23,7 @@ export const getMembersOfBoardAPI = async (boardId: string) => {
   return response.data
 }
 
-export const moveCardToDifferentColumnAPI = async (updateData: { currentCardId: any; prevColumnId: string; prevCardOrderIds: any; nextColumnId: any; nextCardOrderIds: any }) => {
+export const moveCardToDifferentColumnAPI = async (updateData: { currentCardId: string; prevColumnId: string; prevCardOrderIds: string[]; nextColumnId: string; nextCardOrderIds: string[] }) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/boards/supports/moving_card`, updateData)
   return response.data
 }
@@ -89,8 +89,14 @@ export const refreshTokenAPI = async (refreshToken: string) => {
   return response.data
 }
 
+/** Boards */
 export const fetchBoardsAPI = async (searchPath: string) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards${searchPath}`)
+  return response.data
+}
+
+export const fetchColumnsOfBoardAPI = async (boardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/${boardId}/columns`)
   return response.data
 }
 

@@ -44,7 +44,7 @@ const CardDate = ({ card }: CardProps) => {
   };
 
   const isCardDue = new Date().getTime() > card.dueDate;
-  const isNearDue = new Date(card.dueDate).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000;
+  const isNearDue = new Date(card.dueDate).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000 && !isCardDue;
   
   return (
     <Box
@@ -66,16 +66,16 @@ const CardDate = ({ card }: CardProps) => {
         width: 'fit-content',
         paddingY: 0.5,
         paddingX: 1,
-        color: card.isDone || isCardDue ? 'white' : 'black', // Set text color based on card status
+        color: card.isDone || isCardDue ? 'white' : 'black',
         borderRadius: 1,
         backgroundColor: (theme) => {
           if (card.isDone) {
             return color.success[80];
           }
           if (isNearDue) {
-            return color.warning[50];
+            return color.warning[80];
           }
-          return isCardDue ? color.danger[30] : 'white';
+          return isCardDue ? color.danger[80] : 'white';
         },
       }}
     >
@@ -154,7 +154,7 @@ function Card({ card }: CardProps) {
       <Box sx={{ display: 'flex', flexDirection:'row-reverse', alignItems: 'center', paddingBottom: 1, paddingRight: 1 }}>
         {!!card?.memberIds?.length &&
           // <Button size="small" startIcon={<GroupIcon />}>{card?.memberIds?.length}</Button>
-          <BoardUserGroup boardUsers={membersBoard} limit={3} />
+          <BoardUserGroup boardUsers={membersBoard} limit={3} size={24} />
         }
       </Box>
     </MuiCard>

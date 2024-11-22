@@ -258,5 +258,3 @@ function CardHistory({ histories }: CardHistoryProps) {
 }
 
 export default CardHistory;
-
-

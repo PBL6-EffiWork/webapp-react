@@ -156,9 +156,9 @@ function Board() {
     moveCardToDifferentColumnAPI({
       currentCardId,
       prevColumnId,
-      prevCardOrderIds,
-      nextColumnId,
-      nextCardOrderIds: dndOrderedColumns.find(c => c._id === nextColumnId)?.cardOrderIds
+      prevCardOrderIds: prevCardOrderIds || [],
+      nextColumnId: nextColumnId as string,
+      nextCardOrderIds: dndOrderedColumns.find(c => c._id === nextColumnId)?.cardOrderIds || []
     })
   }
 

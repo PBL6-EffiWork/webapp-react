@@ -24,13 +24,11 @@ import { selectBoardMembersId } from '../../../redux/board/boardSlice'
 
 interface MembersProps {
   button?: React.ReactNode;
-  boardId?: string;
+  members?: User[];
 }
 
-export default function Component({ button, boardId }: MembersProps) {
+export default function Component({ button, members }: MembersProps) {
   const [isOpen, setIsOpen] = useState(false)
-
-  const members = useSelector(selectBoardMembersId(boardId || ''))
 
   return (
     // The Dialog component will close when clicking outside of it

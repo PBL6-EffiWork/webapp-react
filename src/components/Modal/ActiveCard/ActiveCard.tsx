@@ -48,6 +48,10 @@ import Tasks from './Tasks'
 import { loadTasksThunk } from '../../../redux/task/taskSlice'
 import Checklist from './Checklist'
 import { BookAIcon, BookDashed } from 'lucide-react'
+import { Switch } from '../../ui/switch'
+import { Label } from '../../ui/label'
+import { SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Select } from '../../ui/select'
+import SelectColumn from './SelectColumn'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -208,24 +212,34 @@ function ActiveCard() {
               />
             </Box>
 
-            <Box sx={{ mb: 3, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}>
-              <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
+            <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className='flex items-center'>
+                <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
 
-              <DatePicker isShowLastDate={true} selectedDate={{
-                from: activeCard?.startDate,
-                to: activeCard?.dueDate
-              }} onDateChange={(date) => {
-                onUpdateCardDate(date)
-              }}/>
+                <DatePicker isShowLastDate={true} selectedDate={{
+                  from: activeCard?.startDate,
+                  to: activeCard?.dueDate
+                }} onDateChange={(date) => {
+                  onUpdateCardDate(date)
+                }}/>
+              </div>
 
-              <Checkbox 
-                id='isDone' 
-                checked={activeCard?.isDone} 
-                className="border-border"
-                onCheckedChange={() => {
-                  callApiUpdateCard({ isDone: !activeCard?.isDone })
-                }}
-              ></Checkbox>
+              <div className='flex items-center gap-2'>
+                <Label htmlFor='isDone'>Status</Label>
+                <Switch 
+                  id='isDone'
+                  checked={activeCard?.isDone} 
+                  onCheckedChange={() => {
+                    callApiUpdateCard({ isDone: !activeCard?.isDone })
+                  }}
+                />
+                {activeCard?.isDone ? 'Done' : 'Not Done'}
+                <SelectColumn 
+                  cardId={activeCard?._id} 
+                  currentColumnId={activeCard?.columnId}
+                  isShow={activeCard?.isDone}
+                />
+              </div>
             </Box>
 
             <Box sx={{ mb: 3 }}>

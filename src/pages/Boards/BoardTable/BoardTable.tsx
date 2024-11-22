@@ -55,6 +55,7 @@ const columns: ColumnDef<BoardTableRow>[] = [
     header: "Members",
     cell: ({ row }) => {
       const members = row.getValue("members") as User[] | undefined
+      if (!members) return null
       return <BoardUserGroup boardUsers={members} limit={3} size={28} />
     },
   },
@@ -137,7 +138,7 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
         id: card._id,
         title: card.title,
         status: column.title,
-        members: members,
+        members: members.filter((member) => card.memberIds.includes(member._id)),
         startDate: card.startDate,
         dueDate: card.dueDate,
       }))
