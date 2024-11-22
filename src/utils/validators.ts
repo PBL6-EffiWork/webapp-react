@@ -26,3 +26,7 @@ export const singleFileValidator = (file: File) => {
   }
   return null
 }
+
+export const isIdPlaceholder = (id: string) => {
+  return id.includes('placeholder-card')
+}

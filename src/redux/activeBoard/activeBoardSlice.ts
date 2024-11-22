@@ -6,6 +6,7 @@ import { isEmpty } from 'lodash'
 import { generatePlaceholderCard } from '../../utils/formatters'
 import { Column } from '../../interfaces/column'
 import { moveCardToDifferentColumnAPI } from '../../apis'
+import { isIdPlaceholder } from '../../utils/validators'
 
 // Define the structure of a Card, Column, and Board
 interface Card {
@@ -108,9 +109,9 @@ export const activeBoardSlice = createSlice({
       moveCardToDifferentColumnAPI({
         currentCardId: cardId,
         prevColumnId: currentColumnId,
-        prevCardOrderIds: updatedCurrentColumn.cardOrderIds,
+        prevCardOrderIds: updatedCurrentColumn.cardOrderIds.filter(id => !isIdPlaceholder(id)),
         nextColumnId: nextColumnId,
-        nextCardOrderIds: updatedNextColumn.cardOrderIds
+        nextCardOrderIds: updatedNextColumn.cardOrderIds.filter(id => !isIdPlaceholder(id))
       })
     }
   },
