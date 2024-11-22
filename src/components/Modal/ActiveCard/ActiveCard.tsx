@@ -52,6 +52,7 @@ import { Switch } from '../../ui/switch'
 import { Label } from '../../ui/label'
 import { SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Select } from '../../ui/select'
 import SelectColumn from './SelectColumn'
+import { useSearchParams } from 'react-router-dom'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -80,6 +81,7 @@ function ActiveCard() {
   const currentUser = useSelector(selectCurrentUser)
   const comments = useSelector(selectCommentsByCardId(activeCard?._id))
   const histories = useSelector(selectHistoryByCardId(activeCard?._id))
+  const [searchParams, setSearchParams] = useSearchParams()
   
   const [currentTab, setCurrentTab] = React.useState(0) // Trạng thái tab hiện tại
 
@@ -89,6 +91,9 @@ function ActiveCard() {
 
   const handleCloseModal = () => {
     dispatch(clearAndHideCurrentActiveCard())
+    // Xóa cardId trong searchParams
+    searchParams.delete('cardId')
+    setSearchParams(searchParams)
   }
 
   const callApiUpdateCard = async (updateData: any) => {

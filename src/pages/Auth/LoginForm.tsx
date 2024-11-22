@@ -45,7 +45,7 @@ function LoginForm() {
     toast.promise(
       dispatch(loginUserAPI({ email, password })),
       { pending: 'Logging in...' }
-    ).then(res => {
+    ).then((res: any) => {
       // console.log(res)
       // Đoạn này phải kiểm tra không có lỗi (login thành công) thì mới redirect về route /
       const result = res as { error?: boolean }

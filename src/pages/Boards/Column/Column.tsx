@@ -32,6 +32,7 @@ import { cloneDeep } from 'lodash'
 import ToggleFocusInput from '../../../components/Form/ToggleFocusInput'
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 interface ColumnProps {
   column: {
@@ -42,6 +43,10 @@ interface ColumnProps {
 function Column({ column }: ColumnProps) {
   const dispatch = useAppDispatch()
   const board = useSelector(selectCurrentActiveBoard)
+
+  const [searchParams] = useSearchParams()
+
+  const cardId = searchParams.get('cardId')
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column._id,
@@ -260,7 +265,7 @@ function Column({ column }: ColumnProps) {
         </Box>
 
         {/* List Cards */}
-        <ListCards cards={orderedCards} />
+        <ListCards cards={orderedCards} activeCardId={cardId || undefined} />
 
         {/* Box Column Footer */}
         <Box sx={{

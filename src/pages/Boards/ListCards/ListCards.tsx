@@ -15,9 +15,10 @@ interface Card {
 
 interface ListCardsProps {
   cards: Card[];
+  activeCardId?: string;
 }
 
-function ListCards({ cards }: ListCardsProps) {
+function ListCards({ cards, activeCardId }: ListCardsProps) {
   return (
     <SortableContext items={cards?.map(c => c._id)} strategy={verticalListSortingStrategy}>
       <Box sx={{
@@ -37,7 +38,7 @@ function ListCards({ cards }: ListCardsProps) {
         '&::-webkit-scrollbar-thumb': { backgroundColor: '#ced0da' },
         '&::-webkit-scrollbar-thumb:hover': { backgroundColor: '#bfc2cf' }
       }}>
-        {cards?.map(card => <Card key={card._id} card={card} />)}
+        {cards?.map(card => <Card key={card._id} card={card} activeCardId={activeCardId} />)}
       </Box>
     </SortableContext>
   )
