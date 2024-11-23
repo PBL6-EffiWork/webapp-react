@@ -162,7 +162,7 @@ function Card({ card, activeCardId }: CardProps) {
       <Box sx={{ display: 'flex', flexDirection:'row-reverse', alignItems: 'center', paddingBottom: 1, paddingRight: 1 }}>
         {!!card?.memberIds?.length &&
           // <Button size="small" startIcon={<GroupIcon />}>{card?.memberIds?.length}</Button>
-          <BoardUserGroup boardUsers={membersBoard.filter(user => card.memberIds.includes(user._id))} limit={3} size={24} />
+          <BoardUserGroup boardUsers={(membersBoard || []).filter(user => card.memberIds.includes(user._id))} limit={3} size={24} />
         }
       </Box>
     </MuiCard>
