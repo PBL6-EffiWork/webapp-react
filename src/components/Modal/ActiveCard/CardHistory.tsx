@@ -22,9 +22,13 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import PeopleIcon from '@mui/icons-material/People';
 import ImageIcon from '@mui/icons-material/Image';
 import { Cancel, CheckCircle, SwapCallsOutlined, SwapHorizRounded, SwapHorizTwoTone } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
+import { selectBoardMembersId } from '../../../redux/board/boardSlice';
+import { selectCurrentUser } from '../../../redux/user/userSlice';
 
 interface CardHistoryProps {
   histories: History[];
+  boardId: string | undefined;
 }
 
 const historyTypeLabels: { [key in History['type']]: string } = {
@@ -57,7 +61,9 @@ const historyTypeIcons: { [key in History['type']]: JSX.Element } = {
   DELETE_COLUMN: <DeleteIcon className="text-red-500" />,
 };
 
-function CardHistory({ histories }: CardHistoryProps) {
+function CardHistory({ histories, boardId }: CardHistoryProps) {
+  const boardMembers = useSelector(selectBoardMembersId(boardId || ''))
+  const currentUser = useSelector(selectCurrentUser)
   if (!histories || histories.length === 0) {
     return (
       <Typography variant="body1" color="text.secondary" className="text-center mt-4">
@@ -144,22 +150,25 @@ function CardHistory({ histories }: CardHistoryProps) {
     if (key === 'memberIds') {
       const oldMembers = history.previous[key] || [];
       const newMembers = history.current[key] || [];
-      const members = history.members;
-  
-      if (oldMembers.length === 0) {
-        if (history.actor.userId === newMembers[0]) {
-          return members?.find((member) => member.userId === newMembers[0])?.displayName || 'You' + ' joined';
+
+      const addedMembers = newMembers.filter((member: string) => !oldMembers.includes(member));
+      const removedMembers = oldMembers.filter((member: string) => !newMembers.includes(member));
+
+      const memberChanges = [...addedMembers, ...removedMembers];
+
+      if (oldMembers.length < newMembers.length) {
+        if (history.actor.userId === memberChanges[0]) {
+          return (currentUser?._id === memberChanges[0] ? 'You' : boardMembers?.find((member) => member._id === memberChanges[0])?.displayName) + ' joined';
         }
-  
-        return history.actor.displayName + ' added ' + members?.find((member) => member.userId === newMembers[0])?.displayName;
+        return (currentUser?._id === history.actor.userId ? 'You' : history.actor.displayName) + ' added ' + (currentUser?._id === memberChanges[0] ? 'You' : boardMembers?.find((member) => member._id === memberChanges[0])?.displayName);
       }
   
-      if (newMembers.length === 0) {
-        if (history.actor.userId === oldMembers[0]) {
-          return members?.find((member) => member.userId === oldMembers[0])?.displayName || 'You' + ' left';
+      if (newMembers.length < oldMembers.length) {
+        if (history.actor.userId === memberChanges[0]) {
+          return (currentUser?._id === memberChanges[0] ? 'You' : boardMembers?.find((member) => member._id === memberChanges[0])?.displayName) + ' left';
         }
   
-        return history.actor.displayName + ' removed ' + members?.find((member) => member.userId === oldMembers[0])?.displayName;
+        return (currentUser?._id === history.actor.userId ? 'You' : history.actor.displayName) + ' removed ' + (currentUser?._id === memberChanges[0] ? 'You' : boardMembers?.find((member) => member._id === memberChanges[0])?.displayName);
       }
     }
   

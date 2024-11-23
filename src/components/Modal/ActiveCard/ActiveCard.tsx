@@ -219,7 +219,7 @@ function ActiveCard() {
 
             <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div className='flex items-center'>
-                <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px' }}>Due Date</Typography>
+                <Typography component="span" sx={{ fontWeight: '600', fontSize: '20px', marginRight: '10px' }}>Due Date</Typography>
 
                 <DatePicker isShowLastDate={true} selectedDate={{
                   from: activeCard?.startDate,
@@ -294,7 +294,7 @@ function ActiveCard() {
                   />
                 )}
                 {currentTab === 1 && (
-                  <CardHistory histories={histories} />
+                  <CardHistory histories={histories} boardId={activeCard?.boardId} />
                 )}
               </Box>
             </Box>
