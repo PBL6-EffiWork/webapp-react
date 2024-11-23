@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer, Views, Event as CalendarEvent } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { parse, startOfWeek, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {
@@ -22,6 +22,16 @@ import {
 import { styled } from '@mui/material/styles';
 import authorizedAxiosInstance from '../../utils/authorizeAxios';
 import { API_ROOT } from '../../utils/constants';
+import { toZonedTime, toDate, format } from 'date-fns-tz';
+
+const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
+
+// Helper functions for timezone conversion
+const convertUtcToZoned = (utcDate: string | Date) =>
+    toZonedTime(utcDate, DEFAULT_TIMEZONE);
+
+const convertZonedToUtc = (zonedDate: string | Date) =>
+    toDate(zonedDate, { timeZone: DEFAULT_TIMEZONE });
 
 interface User {
     _id: string;
@@ -43,7 +53,7 @@ interface MyEvent extends CalendarEvent {
     user_ids: string[];
     description: string;
     event_type_id: string;
-    project_id: string | null; // Thay đổi kiểu để chấp nhận null
+    project_id: string | null; // Allows null
 }
 
 const locales = {
@@ -89,7 +99,7 @@ const MyCalendar: React.FC = () => {
         user_ids: [],
         description: '',
         event_type_id: '',
-        project_id: '',
+        project_id: null,
     });
 
     const API_BASE_URL = `${API_ROOT}/v1`;
@@ -99,6 +109,7 @@ const MyCalendar: React.FC = () => {
             try {
                 const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/users/list`);
                 setUsers(response.data);
+                setFilteredUsers(response.data); // Initialize filteredUsers
             } catch (error) {
                 console.error('Error fetching users:', error);
             }
@@ -119,14 +130,16 @@ const MyCalendar: React.FC = () => {
                 const eventsFromAPI = response.data.map((event: any) => ({
                     ...event,
                     id: event.event_id,
-                    start: new Date(event.start_time),
-                    end: new Date(event.end_time),
+                    // Convert UTC to Zoned Time (UTC+7) for display
+                    start: convertUtcToZoned(new Date(event.start_time)),
+                    end: convertUtcToZoned(new Date(event.end_time)),
                 }));
                 setEvents(eventsFromAPI);
             } catch (error) {
                 console.error('Error fetching events:', error);
             }
         };
+
         fetchUsers();
         fetchProjects();
         fetchEvents();
@@ -135,7 +148,7 @@ const MyCalendar: React.FC = () => {
     const fetchProjectMembers = async (projectId: string | null) => {
         try {
             if (!projectId) {
-                setFilteredUsers(users); // Hiển thị toàn bộ người dùng nếu không có project
+                setFilteredUsers(users); // Show all users if no project
                 return;
             }
 
@@ -152,7 +165,7 @@ const MyCalendar: React.FC = () => {
         } else {
             setFilteredUsers(users);
         }
-    }, [selectedEvent?.project_id]);
+    }, [selectedEvent?.project_id, users]);
 
     const handleOpen = () => {
         setNewEvent({
@@ -206,8 +219,9 @@ const MyCalendar: React.FC = () => {
                 const response = await authorizedAxiosInstance.post(`${API_BASE_URL}/events`, eventToAdd);
                 const createdEvent: MyEvent = {
                     ...response.data,
-                    start: new Date(response.data.start_time),
-                    end: new Date(response.data.end_time),
+                    // Convert UTC to Zoned Time (UTC+7) for display
+                    start: convertUtcToZoned(new Date(response.data.start_time)),
+                    end: convertUtcToZoned(new Date(response.data.end_time)),
                 };
                 setEvents([...events, createdEvent]);
                 setOpen(false);
@@ -254,7 +268,6 @@ const MyCalendar: React.FC = () => {
             selectedEvent.end_time &&
             selectedEvent.description &&
             selectedEvent.event_type_id &&
-            selectedEvent.project_id &&
             selectedEvent.user_ids?.length
         ) {
             if (new Date(selectedEvent.end_time) <= new Date(selectedEvent.start_time)) {
@@ -277,7 +290,6 @@ const MyCalendar: React.FC = () => {
                     `${API_BASE_URL}/events/${selectedEvent.event_id}`,
                     updatedEvent
                 );
-                console.log(response.data);
                 if (response.data) {
                     const updatedEventFromAPI = response.data;
                     setEvents((prevEvents) =>
@@ -286,8 +298,8 @@ const MyCalendar: React.FC = () => {
                                 ? {
                                     ...event,
                                     ...updatedEventFromAPI,
-                                    start: new Date(updatedEventFromAPI.start_time),
-                                    end: new Date(updatedEventFromAPI.end_time),
+                                    start: convertUtcToZoned(new Date(updatedEventFromAPI.start_time)),
+                                    end: convertUtcToZoned(new Date(updatedEventFromAPI.end_time)),
                                 }
                                 : event
                         )
@@ -349,6 +361,7 @@ const MyCalendar: React.FC = () => {
                 })}
                 onSelectEvent={handleEventClick}
             />
+            {/* Add Event Dialog */}
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
                 <DialogTitle sx={{ backgroundColor: '#4CAF50', color: '#fff' }}>Add New Event</DialogTitle>
                 <DialogContent>
@@ -381,10 +394,11 @@ const MyCalendar: React.FC = () => {
                         type="datetime-local"
                         fullWidth
                         variant="outlined"
-                        value={newEvent.start_time ? new Date(newEvent.start_time).toISOString().slice(0, 16) : ''}
+                        value={newEvent.start_time ? format(convertUtcToZoned(newEvent.start_time), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => {
-                            const newStart = new Date(e.target.value).toISOString();
-                            setNewEvent({ ...newEvent, start_time: newStart });
+                            // Convert from UTC+7 to UTC
+                            const newStart = convertZonedToUtc(new Date(e.target.value));
+                            setNewEvent({ ...newEvent, start_time: newStart.toISOString() });
                         }}
                         InputLabelProps={{
                             shrink: true,
@@ -397,10 +411,11 @@ const MyCalendar: React.FC = () => {
                         type="datetime-local"
                         fullWidth
                         variant="outlined"
-                        value={newEvent.end_time ? new Date(newEvent.end_time).toISOString().slice(0, 16) : ''}
+                        value={newEvent.end_time ? format(convertUtcToZoned(newEvent.end_time), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => {
-                            const newEnd = new Date(e.target.value).toISOString();
-                            setNewEvent({ ...newEvent, end_time: newEnd });
+                            // Convert from UTC+7 to UTC
+                            const newEnd = convertZonedToUtc(new Date(e.target.value));
+                            setNewEvent({ ...newEvent, end_time: newEnd.toISOString() });
                         }}
                         InputLabelProps={{
                             shrink: true,
@@ -448,7 +463,7 @@ const MyCalendar: React.FC = () => {
                             {filteredUsers.map((user) => (
                                 <MenuItem key={user._id} value={user._id}>
                                     <Checkbox checked={(newEvent.user_ids || []).includes(user._id)} />
-                                    <ListItemText primary={user.username} /> {/* Hiển thị chỉ username */}
+                                    <ListItemText primary={user.username} />
                                 </MenuItem>
                             ))}
                         </Select>
@@ -463,6 +478,7 @@ const MyCalendar: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* Event Details Dialog */}
             <Dialog open={openDetails} onClose={handleDetailsClose} fullWidth maxWidth="sm">
                 <DialogTitle sx={{ backgroundColor: '#4CAF50', color: '#fff' }}>Event Details</DialogTitle>
                 <DialogContent>
@@ -496,10 +512,11 @@ const MyCalendar: React.FC = () => {
                                 type="datetime-local"
                                 fullWidth
                                 variant="outlined"
-                                value={selectedEvent.start_time ? new Date(selectedEvent.start_time).toISOString().slice(0, 16) : ''}
+                                value={selectedEvent.start_time ? format(convertUtcToZoned(selectedEvent.start_time), "yyyy-MM-dd'T'HH:mm") : ''}
                                 onChange={(e) => {
-                                    const newStart = new Date(e.target.value).toISOString();
-                                    setSelectedEvent({ ...selectedEvent, start_time: newStart, start: new Date(newStart) });
+                                    // Convert from UTC+7 to UTC
+                                    const newStart = convertZonedToUtc(new Date(e.target.value));
+                                    setSelectedEvent({ ...selectedEvent, start_time: newStart.toISOString(), start: convertUtcToZoned(newStart) });
                                 }}
                                 InputLabelProps={{
                                     shrink: true,
@@ -512,10 +529,11 @@ const MyCalendar: React.FC = () => {
                                 type="datetime-local"
                                 fullWidth
                                 variant="outlined"
-                                value={selectedEvent.end_time ? new Date(selectedEvent.end_time).toISOString().slice(0, 16) : ''}
+                                value={selectedEvent.end_time ? format(convertUtcToZoned(selectedEvent.end_time), "yyyy-MM-dd'T'HH:mm") : ''}
                                 onChange={(e) => {
-                                    const newEnd = new Date(e.target.value).toISOString();
-                                    setSelectedEvent({ ...selectedEvent, end_time: newEnd, end: new Date(newEnd) });
+                                    // Convert from UTC+7 to UTC
+                                    const newEnd = convertZonedToUtc(new Date(e.target.value));
+                                    setSelectedEvent({ ...selectedEvent, end_time: newEnd.toISOString(), end: convertUtcToZoned(newEnd) });
                                 }}
                                 InputLabelProps={{
                                     shrink: true,
@@ -563,7 +581,7 @@ const MyCalendar: React.FC = () => {
                                     {filteredUsers.map((user) => (
                                         <MenuItem key={user._id} value={user._id}>
                                             <Checkbox checked={(selectedEvent?.user_ids || []).includes(user._id)} />
-                                            <ListItemText primary={user.username} /> {/* Hiển thị chỉ username */}
+                                            <ListItemText primary={user.username} />
                                         </MenuItem>
                                     ))}
                                 </Select>
