@@ -13,8 +13,6 @@ function PageLoadingSpinner({ caption }: PageLoadingSpinnerProps) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 2,
-      width: '100vw',
-      height: '100vh'
     }}>
       <CircularProgress />
       <Typography>{caption}</Typography>
