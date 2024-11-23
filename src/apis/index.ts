@@ -176,3 +176,21 @@ export const top5Cards = async (memberId: string): Promise<any> => {
   }
 };
 
+export const countCard = async (timeframe: string ,memberID: string) => {
+  try {
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/helpers/count/${timeframe}&${memberID}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const countEvent = async (memberID: string) => {
+  try {
+    const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/events/count/${memberID}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
