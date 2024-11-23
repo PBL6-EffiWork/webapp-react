@@ -138,7 +138,7 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
         id: card._id,
         title: card.title,
         status: column.title,
-        members: members.filter((member) => card.memberIds.includes(member._id)),
+        members: (members || []).filter((member) => card.memberIds.includes(member._id)),
         startDate: card.startDate,
         dueDate: card.dueDate,
       }))
