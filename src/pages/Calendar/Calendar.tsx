@@ -43,7 +43,7 @@ interface MyEvent extends CalendarEvent {
     user_ids: string[];
     description: string;
     event_type_id: string;
-    project_id: string;
+    project_id: string | null; // Thay đổi kiểu để chấp nhận null
 }
 
 const locales = {
@@ -76,6 +76,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const MyCalendar: React.FC = () => {
     const [events, setEvents] = useState<MyEvent[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [open, setOpen] = useState<boolean>(false);
     const [openDetails, setOpenDetails] = useState<boolean>(false);
@@ -126,11 +127,32 @@ const MyCalendar: React.FC = () => {
                 console.error('Error fetching events:', error);
             }
         };
-
         fetchUsers();
         fetchProjects();
         fetchEvents();
     }, []);
+
+    const fetchProjectMembers = async (projectId: string | null) => {
+        try {
+            if (!projectId) {
+                setFilteredUsers(users); // Hiển thị toàn bộ người dùng nếu không có project
+                return;
+            }
+
+            const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
+            setFilteredUsers(response.data);
+        } catch (error) {
+            console.error('Error fetching project members:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (selectedEvent?.project_id) {
+            fetchProjectMembers(selectedEvent.project_id);
+        } else {
+            setFilteredUsers(users);
+        }
+    }, [selectedEvent?.project_id]);
 
     const handleOpen = () => {
         setNewEvent({
@@ -140,13 +162,15 @@ const MyCalendar: React.FC = () => {
             user_ids: [],
             description: '',
             event_type_id: '',
-            project_id: '',
+            project_id: null,
         });
+        setFilteredUsers(users);
         setOpen(true);
     };
 
     const handleClose = () => {
         setOpen(false);
+        setFilteredUsers([]);
     };
 
     const handleDetailsClose = () => {
@@ -161,7 +185,6 @@ const MyCalendar: React.FC = () => {
             newEvent.end_time &&
             newEvent.description &&
             newEvent.event_type_id &&
-            newEvent.project_id &&
             newEvent.user_ids?.length
         ) {
             if (new Date(newEvent.end_time) <= new Date(newEvent.start_time)) {
@@ -176,24 +199,15 @@ const MyCalendar: React.FC = () => {
                 user_ids: newEvent.user_ids!,
                 description: newEvent.description!,
                 event_type_id: newEvent.event_type_id!,
-                project_id: newEvent.project_id!,
+                project_id: newEvent.project_id || null,
             };
 
             try {
                 const response = await authorizedAxiosInstance.post(`${API_BASE_URL}/events`, eventToAdd);
                 const createdEvent: MyEvent = {
-                    _id: response.data._id,
-                    event_id: response.data.event_id,
-                    id: response.data.event_id,
-                    title: response.data.title!,
-                    start_time: response.data.start_time!,
-                    end_time: response.data.end_time!,
-                    user_ids: response.data.user_ids!,
-                    description: response.data.description!,
-                    event_type_id: response.data.event_type_id!,
-                    project_id: response.data.project_id!,
-                    start: new Date(response.data.start_time!),
-                    end: new Date(response.data.end_time!),
+                    ...response.data,
+                    start: new Date(response.data.start_time),
+                    end: new Date(response.data.end_time),
                 };
                 setEvents([...events, createdEvent]);
                 setOpen(false);
@@ -204,6 +218,11 @@ const MyCalendar: React.FC = () => {
         } else {
             alert('Please fill in all required fields.');
         }
+    };
+
+    const handleProjectChange = (projectId: string | null) => {
+        setNewEvent({ ...newEvent, project_id: projectId });
+        fetchProjectMembers(projectId);
     };
 
     const handleEventClick = (event: MyEvent) => {
@@ -400,11 +419,11 @@ const MyCalendar: React.FC = () => {
                             <MenuItem value="3">Presentation</MenuItem>
                         </Select>
                     </FormControl>
-                    <FormControl fullWidth margin="dense" variant="outlined" required>
+                    <FormControl fullWidth margin="dense">
                         <InputLabel>Project</InputLabel>
                         <Select
                             value={newEvent.project_id || ''}
-                            onChange={(e) => setNewEvent({ ...newEvent, project_id: e.target.value })}
+                            onChange={(e) => handleProjectChange(e.target.value || null)}
                             label="Project"
                         >
                             {projects.map((project) => (
@@ -422,14 +441,14 @@ const MyCalendar: React.FC = () => {
                             onChange={(e) => setNewEvent({ ...newEvent, user_ids: e.target.value as string[] })}
                             input={<OutlinedInput label="Users" />}
                             renderValue={(selected) => {
-                                const selectedUsers = users.filter((user) => selected.includes(user._id));
+                                const selectedUsers = filteredUsers.filter((user) => selected.includes(user._id));
                                 return selectedUsers.map((user) => user.username).join(', ');
                             }}
                         >
-                            {users.map((user) => (
+                            {filteredUsers.map((user) => (
                                 <MenuItem key={user._id} value={user._id}>
                                     <Checkbox checked={(newEvent.user_ids || []).includes(user._id)} />
-                                    <ListItemText primary={user.username} />
+                                    <ListItemText primary={user.username} /> {/* Hiển thị chỉ username */}
                                 </MenuItem>
                             ))}
                         </Select>
@@ -515,11 +534,11 @@ const MyCalendar: React.FC = () => {
                                     <MenuItem value="3">Presentation</MenuItem>
                                 </Select>
                             </FormControl>
-                            <FormControl fullWidth margin="dense" variant="outlined" required>
+                            <FormControl fullWidth margin="dense">
                                 <InputLabel>Project</InputLabel>
                                 <Select
-                                    value={selectedEvent.project_id}
-                                    onChange={(e) => setSelectedEvent({ ...selectedEvent, project_id: e.target.value })}
+                                    value={selectedEvent?.project_id || ''}
+                                    onChange={(e) => setSelectedEvent({ ...selectedEvent!, project_id: e.target.value || null })}
                                     label="Project"
                                 >
                                     {projects.map((project) => (
@@ -533,18 +552,18 @@ const MyCalendar: React.FC = () => {
                                 <InputLabel>Users</InputLabel>
                                 <Select
                                     multiple
-                                    value={selectedEvent.user_ids}
-                                    onChange={(e) => setSelectedEvent({ ...selectedEvent, user_ids: e.target.value as string[] })}
+                                    value={selectedEvent?.user_ids || []}
+                                    onChange={(e) => setSelectedEvent({ ...selectedEvent!, user_ids: e.target.value as string[] })}
                                     input={<OutlinedInput label="Users" />}
                                     renderValue={(selected) => {
-                                        const selectedUsers = users.filter((user) => selected.includes(user._id));
+                                        const selectedUsers = filteredUsers.filter((user) => selected.includes(user._id));
                                         return selectedUsers.map((user) => user.username).join(', ');
                                     }}
                                 >
-                                    {users.map((user) => (
+                                    {filteredUsers.map((user) => (
                                         <MenuItem key={user._id} value={user._id}>
-                                            <Checkbox checked={selectedEvent.user_ids.includes(user._id)} />
-                                            <ListItemText primary={user.username} />
+                                            <Checkbox checked={(selectedEvent?.user_ids || []).includes(user._id)} />
+                                            <ListItemText primary={user.username} /> {/* Hiển thị chỉ username */}
                                         </MenuItem>
                                     ))}
                                 </Select>
