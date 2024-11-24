@@ -104,7 +104,7 @@ const MyCalendar: React.FC = () => {
 
     const API_BASE_URL = `${API_ROOT}/v1`;
 
-    // Define fetchEvents outside useEffect for reuse
+    // Fetch events
     const fetchEvents = async () => {
         try {
             const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/events`);
@@ -150,13 +150,24 @@ const MyCalendar: React.FC = () => {
         try {
             if (!projectId) {
                 setFilteredUsers(users); // Show all users if no project
+                setNewEvent(prev => ({
+                    ...prev,
+                    user_ids: users.map(user => user._id), // Select all users
+                }));
                 return;
             }
 
             const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
-            setFilteredUsers(response.data);
+            const projectMembers: User[] = response.data;
+            setFilteredUsers(projectMembers);
+            setNewEvent(prev => ({
+                ...prev,
+                user_ids: projectMembers.map(member => member._id), // Select project members
+            }));
         } catch (error) {
             console.error('Error fetching project members:', error);
+            setFilteredUsers([]);
+            setNewEvent(prev => ({ ...prev, user_ids: [] }));
         }
     };
 
@@ -165,6 +176,10 @@ const MyCalendar: React.FC = () => {
             fetchProjectMembers(selectedEvent.project_id);
         } else {
             setFilteredUsers(users);
+            setSelectedEvent(prev => ({
+                ...prev!,
+                user_ids: users.map(user => user._id),
+            }));
         }
     }, [selectedEvent?.project_id, users]);
 
@@ -173,7 +188,7 @@ const MyCalendar: React.FC = () => {
             title: '',
             start_time: new Date().toISOString(),
             end_time: new Date().toISOString(),
-            user_ids: [],
+            user_ids: users.map(user => user._id), // Select all users by default
             description: '',
             event_type_id: '',
             project_id: null,
@@ -230,14 +245,49 @@ const MyCalendar: React.FC = () => {
         }
     };
 
-    const handleProjectChange = (projectId: string | null) => {
+    const handleProjectChange = async (projectId: string | null) => {
         setNewEvent({ ...newEvent, project_id: projectId });
-        fetchProjectMembers(projectId);
+
+        if (projectId) {
+            try {
+                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
+                const projectMembers: User[] = response.data;
+                setFilteredUsers(projectMembers);
+                setNewEvent(prev => ({
+                    ...prev,
+                    user_ids: projectMembers.map(member => member._id), // Select project members
+                }));
+            } catch (error) {
+                console.error('Error fetching project members:', error);
+                setFilteredUsers([]);
+                setNewEvent(prev => ({ ...prev, user_ids: [] }));
+            }
+        } else {
+            setFilteredUsers(users);
+            setNewEvent(prev => ({
+                ...prev,
+                user_ids: users.map(user => user._id), // Select all users
+            }));
+        }
     };
 
-    const handleEventClick = (event: MyEvent) => {
+    const handleEventClick = async (event: MyEvent) => {
         setSelectedEvent({ ...event });
         setOpenDetails(true);
+
+        if (event.project_id) {
+            await fetchProjectMembers(event.project_id);
+            setSelectedEvent(prev => ({
+                ...prev!,
+                user_ids: filteredUsers.map(user => user._id), // Select project members
+            }));
+        } else {
+            setFilteredUsers(users);
+            setSelectedEvent(prev => ({
+                ...prev!,
+                user_ids: users.map(user => user._id), // Select all users
+            }));
+        }
     };
 
     const handleDelete = async () => {
@@ -378,8 +428,8 @@ const MyCalendar: React.FC = () => {
                         variant="outlined"
                         value={newEvent.start_time ? format(convertUtcToZoned(newEvent.start_time), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => {
-                            // Convert from UTC+7 to UTC
-                            const newStart = convertZonedToUtc(new Date(e.target.value));
+                            // Convert from Zoned Time to UTC
+                            const newStart = convertZonedToUtc(e.target.value);
                             setNewEvent({ ...newEvent, start_time: newStart.toISOString() });
                         }}
                         InputLabelProps={{
@@ -395,8 +445,8 @@ const MyCalendar: React.FC = () => {
                         variant="outlined"
                         value={newEvent.end_time ? format(convertUtcToZoned(newEvent.end_time), "yyyy-MM-dd'T'HH:mm") : ''}
                         onChange={(e) => {
-                            // Convert from UTC+7 to UTC
-                            const newEnd = convertZonedToUtc(new Date(e.target.value));
+                            // Convert from Zoned Time to UTC
+                            const newEnd = convertZonedToUtc(e.target.value);
                             setNewEvent({ ...newEvent, end_time: newEnd.toISOString() });
                         }}
                         InputLabelProps={{
@@ -423,6 +473,9 @@ const MyCalendar: React.FC = () => {
                             onChange={(e) => handleProjectChange(e.target.value || null)}
                             label="Project"
                         >
+                            <MenuItem value="">
+                                <em>None</em>
+                            </MenuItem>
                             {projects.map((project) => (
                                 <MenuItem key={project.id} value={project.id}>
                                     {project.name}
@@ -435,13 +488,44 @@ const MyCalendar: React.FC = () => {
                         <Select
                             multiple
                             value={newEvent.user_ids || []}
-                            onChange={(e) => setNewEvent({ ...newEvent, user_ids: e.target.value as string[] })}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (value.includes('select-all')) {
+                                    if ((newEvent.user_ids || []).length === filteredUsers.length) {
+                                        setNewEvent({ ...newEvent, user_ids: [] });
+                                    } else {
+                                        setNewEvent({ ...newEvent, user_ids: filteredUsers.map(user => user._id) });
+                                    }
+                                } else {
+                                    setNewEvent({ ...newEvent, user_ids: value as string[] });
+                                }
+                            }}
                             input={<OutlinedInput label="Users" />}
                             renderValue={(selected) => {
                                 const selectedUsers = filteredUsers.filter((user) => selected.includes(user._id));
                                 return selectedUsers.map((user) => user.username).join(', ');
                             }}
                         >
+                            {/* Select All Option */}
+                            <MenuItem
+                                value="select-all"
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Ngăn sự kiện được truyền lên Select
+                                    if ((newEvent.user_ids || []).length === filteredUsers.length) {
+                                        // Bỏ chọn tất cả
+                                        setNewEvent({ ...newEvent, user_ids: [] });
+                                    } else {
+                                        // Chọn tất cả
+                                        setNewEvent({ ...newEvent, user_ids: filteredUsers.map(user => user._id) });
+                                    }
+                                }}
+                            >
+                                <Checkbox
+                                    checked={(newEvent.user_ids || []).length === filteredUsers.length}
+                                    indeterminate={(newEvent.user_ids || []).length > 0 && (newEvent.user_ids || []).length < filteredUsers.length}
+                                />
+                                <ListItemText primary="Select All" />
+                            </MenuItem>
                             {filteredUsers.map((user) => (
                                 <MenuItem key={user._id} value={user._id}>
                                     <Checkbox checked={(newEvent.user_ids || []).includes(user._id)} />
@@ -496,8 +580,8 @@ const MyCalendar: React.FC = () => {
                                 variant="outlined"
                                 value={selectedEvent.start_time ? format(convertUtcToZoned(selectedEvent.start_time), "yyyy-MM-dd'T'HH:mm") : ''}
                                 onChange={(e) => {
-                                    // Convert from UTC+7 to UTC
-                                    const newStart = convertZonedToUtc(new Date(e.target.value));
+                                    // Convert from Zoned Time to UTC
+                                    const newStart = convertZonedToUtc(e.target.value);
                                     setSelectedEvent({ ...selectedEvent, start_time: newStart.toISOString(), start: convertUtcToZoned(newStart) });
                                 }}
                                 InputLabelProps={{
@@ -513,8 +597,8 @@ const MyCalendar: React.FC = () => {
                                 variant="outlined"
                                 value={selectedEvent.end_time ? format(convertUtcToZoned(selectedEvent.end_time), "yyyy-MM-dd'T'HH:mm") : ''}
                                 onChange={(e) => {
-                                    // Convert from UTC+7 to UTC
-                                    const newEnd = convertZonedToUtc(new Date(e.target.value));
+                                    // Convert from Zoned Time to UTC
+                                    const newEnd = convertZonedToUtc(e.target.value);
                                     setSelectedEvent({ ...selectedEvent, end_time: newEnd.toISOString(), end: convertUtcToZoned(newEnd) });
                                 }}
                                 InputLabelProps={{
@@ -538,9 +622,12 @@ const MyCalendar: React.FC = () => {
                                 <InputLabel>Project</InputLabel>
                                 <Select
                                     value={selectedEvent?.project_id || ''}
-                                    onChange={(e) => setSelectedEvent({ ...selectedEvent!, project_id: e.target.value || null })}
+                                    onChange={(e) => handleProjectChange(e.target.value || null)}
                                     label="Project"
                                 >
+                                    <MenuItem value="">
+                                        <em>None</em>
+                                    </MenuItem>
                                     {projects.map((project) => (
                                         <MenuItem key={project.id} value={project.id}>
                                             {project.name}
@@ -553,13 +640,44 @@ const MyCalendar: React.FC = () => {
                                 <Select
                                     multiple
                                     value={selectedEvent?.user_ids || []}
-                                    onChange={(e) => setSelectedEvent({ ...selectedEvent!, user_ids: e.target.value as string[] })}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value.includes('select-all')) {
+                                            if ((selectedEvent?.user_ids || []).length === filteredUsers.length) {
+                                                setSelectedEvent({ ...selectedEvent!, user_ids: [] });
+                                            } else {
+                                                setSelectedEvent({ ...selectedEvent!, user_ids: filteredUsers.map(user => user._id) });
+                                            }
+                                        } else {
+                                            setSelectedEvent({ ...selectedEvent!, user_ids: value as string[] });
+                                        }
+                                    }}
                                     input={<OutlinedInput label="Users" />}
                                     renderValue={(selected) => {
                                         const selectedUsers = filteredUsers.filter((user) => selected.includes(user._id));
                                         return selectedUsers.map((user) => user.username).join(', ');
                                     }}
                                 >
+                                    {/* Select All Option */}
+                                    <MenuItem
+                                        value="select-all"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Ngăn sự kiện được truyền lên Select
+                                            if ((selectedEvent?.user_ids || []).length === filteredUsers.length) {
+                                                // Bỏ chọn tất cả
+                                                setSelectedEvent({ ...selectedEvent!, user_ids: [] });
+                                            } else {
+                                                // Chọn tất cả
+                                                setSelectedEvent({ ...selectedEvent!, user_ids: filteredUsers.map(user => user._id) });
+                                            }
+                                        }}
+                                    >
+                                        <Checkbox
+                                            checked={(selectedEvent?.user_ids || []).length === filteredUsers.length}
+                                            indeterminate={(selectedEvent?.user_ids || []).length > 0 && (selectedEvent?.user_ids || []).length < filteredUsers.length}
+                                        />
+                                        <ListItemText primary="Select All" />
+                                    </MenuItem>
                                     {filteredUsers.map((user) => (
                                         <MenuItem key={user._id} value={user._id}>
                                             <Checkbox checked={(selectedEvent?.user_ids || []).includes(user._id)} />
