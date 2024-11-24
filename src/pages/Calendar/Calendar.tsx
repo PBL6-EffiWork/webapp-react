@@ -104,6 +104,23 @@ const MyCalendar: React.FC = () => {
 
     const API_BASE_URL = `${API_ROOT}/v1`;
 
+    // Define fetchEvents outside useEffect for reuse
+    const fetchEvents = async () => {
+        try {
+            const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/events`);
+            const eventsFromAPI = response.data.map((event: any) => ({
+                ...event,
+                id: event.event_id,
+                // Convert UTC to Zoned Time (UTC+7) for display
+                start: convertUtcToZoned(new Date(event.start_time)),
+                end: convertUtcToZoned(new Date(event.end_time)),
+            }));
+            setEvents(eventsFromAPI);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -124,26 +141,10 @@ const MyCalendar: React.FC = () => {
             }
         };
 
-        const fetchEvents = async () => {
-            try {
-                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/events`);
-                const eventsFromAPI = response.data.map((event: any) => ({
-                    ...event,
-                    id: event.event_id,
-                    // Convert UTC to Zoned Time (UTC+7) for display
-                    start: convertUtcToZoned(new Date(event.start_time)),
-                    end: convertUtcToZoned(new Date(event.end_time)),
-                }));
-                setEvents(eventsFromAPI);
-            } catch (error) {
-                console.error('Error fetching events:', error);
-            }
-        };
-
+        fetchEvents();
         fetchUsers();
         fetchProjects();
-        fetchEvents();
-    }, []);
+    }, [API_BASE_URL]); // Add API_BASE_URL as a dependency if necessary
 
     const fetchProjectMembers = async (projectId: string | null) => {
         try {
@@ -216,14 +217,9 @@ const MyCalendar: React.FC = () => {
             };
 
             try {
-                const response = await authorizedAxiosInstance.post(`${API_BASE_URL}/events`, eventToAdd);
-                const createdEvent: MyEvent = {
-                    ...response.data,
-                    // Convert UTC to Zoned Time (UTC+7) for display
-                    start: convertUtcToZoned(new Date(response.data.start_time)),
-                    end: convertUtcToZoned(new Date(response.data.end_time)),
-                };
-                setEvents([...events, createdEvent]);
+                await authorizedAxiosInstance.post(`${API_BASE_URL}/events`, eventToAdd);
+                // After successful addition, fetch the latest events
+                await fetchEvents();
                 setOpen(false);
             } catch (error: any) {
                 console.error('Failed to save event:', error);
@@ -251,7 +247,8 @@ const MyCalendar: React.FC = () => {
             }
             try {
                 await authorizedAxiosInstance.delete(`${API_BASE_URL}/events/${selectedEvent.event_id}`);
-                setEvents(events.filter((event) => event.event_id !== selectedEvent.event_id));
+                // After successful deletion, fetch the latest events
+                await fetchEvents();
                 setOpenDetails(false);
                 setSelectedEvent(null);
             } catch (error: any) {
@@ -286,29 +283,14 @@ const MyCalendar: React.FC = () => {
             };
 
             try {
-                const response = await authorizedAxiosInstance.put(
+                await authorizedAxiosInstance.put(
                     `${API_BASE_URL}/events/${selectedEvent.event_id}`,
                     updatedEvent
                 );
-                if (response.data) {
-                    const updatedEventFromAPI = response.data;
-                    setEvents((prevEvents) =>
-                        prevEvents.map((event) =>
-                            event.event_id === selectedEvent.event_id
-                                ? {
-                                    ...event,
-                                    ...updatedEventFromAPI,
-                                    start: convertUtcToZoned(new Date(updatedEventFromAPI.start_time)),
-                                    end: convertUtcToZoned(new Date(updatedEventFromAPI.end_time)),
-                                }
-                                : event
-                        )
-                    );
-                    setOpenDetails(false);
-                    alert('Event updated successfully');
-                } else {
-                    throw new Error('Invalid response format');
-                }
+                // After successful update, fetch the latest events
+                await fetchEvents();
+                setOpenDetails(false);
+                alert('Event updated successfully');
             } catch (error: any) {
                 console.error('Failed to update event:', error.response || error.message);
                 alert(`Failed to update event: ${error.response?.data?.message || 'Unknown error'}`);
