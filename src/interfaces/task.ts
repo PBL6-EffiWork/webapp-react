@@ -20,3 +20,11 @@ export interface Subtask {
   createdAt?: number;
   updatedAt?: number;
 }
+
+export interface CardStatus {
+  cardId: string;
+  _id: string;
+  status: {
+    [key: string]: boolean;
+  }
+}

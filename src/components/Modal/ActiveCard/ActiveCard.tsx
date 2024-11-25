@@ -27,7 +27,7 @@ import {
   updateCurrentActiveCard,
   selectIsShowModalActiveCard
 } from '@/redux/activeCard/activeCardSlice'
-import { updateCardDetailsAPI } from '@/apis'
+import { updateCardDetailsAPI, updateCardStatusAPI } from '@/apis'
 import { updateCardInBoard } from '@/redux/activeBoard/activeBoardSlice'
 import { selectCurrentUser } from '@/redux/user/userSlice'
 import { CARD_MEMBER_ACTIONS } from '@/utils/constants'
@@ -53,6 +53,7 @@ import { Label } from '../../ui/label'
 import { SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Select } from '../../ui/select'
 import SelectColumn from './SelectColumn'
 import { useSearchParams } from 'react-router-dom'
+import { loadCardStatusThunk, selectCardStatus, updateCardStatus } from '../../../redux/board/boardSlice'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -82,7 +83,7 @@ function ActiveCard() {
   const comments = useSelector(selectCommentsByCardId(activeCard?._id))
   const histories = useSelector(selectHistoryByCardId(activeCard?._id))
   const [searchParams, setSearchParams] = useSearchParams()
-  
+  const status = useSelector(selectCardStatus(activeCard?._id ?? ''))
   const [currentTab, setCurrentTab] = React.useState(0) // Trạng thái tab hiện tại
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
@@ -104,6 +105,13 @@ function ActiveCard() {
     dispatch(updateCardInBoard(updatedCard))
 
     return updatedCard
+  }
+
+  const callApiUpdateCardStatus = async (status: boolean) => {
+    if (activeCard?.columnId) {
+      await updateCardStatusAPI(activeCard._id, activeCard.columnId, status)
+      dispatch(updateCardStatus({ cardId: activeCard._id, columnId: activeCard.columnId, status }))
+    }
   }
 
   const onUpdateCardTitle = (newTitle: any) => {
@@ -153,6 +161,7 @@ function ActiveCard() {
       dispatch(loadHistoryCardThunk(activeCard._id))
       dispatch(loadCommentsThunk(activeCard._id))
       dispatch(loadTasksThunk(activeCard._id))
+      dispatch(loadCardStatusThunk({ cardId: activeCard._id, boardId: activeCard.boardId }))
     }
   }, [activeCard])
 
@@ -233,16 +242,18 @@ function ActiveCard() {
                 <Label htmlFor='isDone'>Status</Label>
                 <Switch 
                   id='isDone'
-                  checked={activeCard?.isDone} 
+                  checked={activeCard?.columnId ? status[activeCard.columnId] : false}
                   onCheckedChange={() => {
-                    callApiUpdateCard({ isDone: !activeCard?.isDone })
+                    if (activeCard?.columnId) {
+                      callApiUpdateCardStatus(!status[activeCard.columnId])
+                    }
                   }}
                 />
-                {activeCard?.isDone ? 'Done' : 'Not Done'}
+                {activeCard?.columnId ? 'Done' : 'Not Done'}
                 <SelectColumn 
                   cardId={activeCard?._id} 
                   currentColumnId={activeCard?.columnId}
-                  isShow={activeCard?.isDone}
+                  isShow={activeCard?.columnId ? status[activeCard.columnId] : false}
                 />
               </div>
             </Box>

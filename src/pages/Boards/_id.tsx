@@ -27,7 +27,7 @@ import React from 'react'
 import BoardTable from './BoardTable/BoardTable'
 import { Column } from '../../interfaces/column'
 import { Card } from '../../interfaces/card'
-import { loadMembersBoardThunk } from '../../redux/board/boardSlice'
+import { loadCardsStatusOfBoardThunk, loadMembersBoardThunk } from '../../redux/board/boardSlice'
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -72,6 +72,7 @@ function Board() {
 
     dispatch(fetchBoardDetailsAPI(boardId as string))
     dispatch(loadMembersBoardThunk(boardId as string))
+    dispatch(loadCardsStatusOfBoardThunk(boardId as string))
   }, [dispatch, boardId])
 
   useEffect(() => {

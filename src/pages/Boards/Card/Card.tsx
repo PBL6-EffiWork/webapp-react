@@ -14,15 +14,14 @@ import { updateCurrentActiveCard, showModalActiveCard } from '../../../redux/act
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { selectBoardMembersId } from '../../../redux/board/boardSlice'
+import { selectBoardMembersId, selectCardStatus, updateCardStatus } from '../../../redux/board/boardSlice'
 import { Card as ICard } from '../../../interfaces/card'
 import BoardUserGroup from '../BoardBar/BoardUserGroup'
 import { loadCommentsThunk, selectCommentsByCardId } from '../../../redux/comment/commentSlice'
 import { WatchIcon } from 'lucide-react'
 import { CheckBox, CheckBoxOutlineBlankOutlined } from '@mui/icons-material'
 import color from '../../../constants/color'
-import { updateCardDetailsAPI } from '../../../apis'
-import { updateCardInBoard } from '../../../redux/activeBoard/activeBoardSlice'
+import { updateCardStatusAPI } from '../../../apis'
 import { useSearchParams } from 'react-router-dom';
 
 interface CardProps {
@@ -30,19 +29,18 @@ interface CardProps {
   activeCardId?: string;
 }
 
-const CardDate = ({ card }: CardProps) => {
+const CardDate = React.memo(({ card }: CardProps) => {
   const dispatch = useAppDispatch();
+  const status = useSelector(selectCardStatus(card._id))
 
   const convertDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return `${date.getDate()} ${date.toLocaleString('default', { month: 'short' })}`;
   };
 
-  const callApiUpdateCard = async (updateData: any) => {
-    const updatedCard = await updateCardDetailsAPI(card?._id, updateData);
-    dispatch(updateCurrentActiveCard(updatedCard));
-    dispatch(updateCardInBoard(updatedCard));
-    return updatedCard;
+  const callApiUpdateCard = async (status: boolean) => {
+    await updateCardStatusAPI(card._id, card.columnId, status)
+    dispatch(updateCardStatus({ cardId: card._id, columnId: card.columnId, status }))
   };
 
   const isCardDue = new Date().getTime() > card.dueDate;
@@ -52,7 +50,7 @@ const CardDate = ({ card }: CardProps) => {
     <Box
       onClick={(e) => {
         e.stopPropagation();
-        callApiUpdateCard({ isDone: !card.isDone });
+        callApiUpdateCard(!status[card.columnId]);
       }}
       sx={{
         display: 'flex',
@@ -68,10 +66,10 @@ const CardDate = ({ card }: CardProps) => {
         width: 'fit-content',
         paddingY: 0.5,
         paddingX: 1,
-        color: card.isDone || isCardDue ? 'white' : 'black',
+        color: status[card.columnId] || isCardDue ? 'white' : 'black',
         borderRadius: 1,
         backgroundColor: (theme) => {
-          if (card.isDone) {
+          if (status[card.columnId]) {
             return color.success[80];
           }
           if (isNearDue) {
@@ -85,12 +83,12 @@ const CardDate = ({ card }: CardProps) => {
         <WatchIcon />
       </Box>
       <Box className="checkbox" sx={{ display: 'none' }}>
-        {card.isDone ? <CheckBox /> : <CheckBoxOutlineBlankOutlined />}
+        {status[card.columnId] ? <CheckBox /> : <CheckBoxOutlineBlankOutlined />}
       </Box>
       <Typography>{`${convertDate(card.startDate)} - ${convertDate(card.dueDate)}`}</Typography>
     </Box>
   );
-};
+});
 
 
 function Card({ card, activeCardId }: CardProps) {

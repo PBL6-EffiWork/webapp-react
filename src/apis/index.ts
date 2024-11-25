@@ -50,6 +50,16 @@ export const createNewCardAPI = async (newCardData: { boardId: any; title: strin
   return response.data
 }
 
+export const getCardStatusAPI = async (cardId: string, boardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/${boardId}/status/${cardId}`)
+  return response.data
+}
+
+export const getCardStatusOfBoardAPI = async (boardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/${boardId}/cards/status`)
+  return response.data
+}
+
 /** Comments */
 export const createCommentAPI = async (newCommentData: { cardId: string; userId: string; content: string }) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/comments`, newCommentData)
@@ -108,6 +118,11 @@ export const createNewBoardAPI = async (data: any) => {
 
 export const updateCardDetailsAPI = async (cardId: any, updateData: any) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/cards/${cardId}`, updateData)
+  return response.data
+}
+
+export const updateCardStatusAPI = async (cardId: string, columnId: string, status: boolean) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/status/update`, { cardId, columnId, status })
   return response.data
 }
 
