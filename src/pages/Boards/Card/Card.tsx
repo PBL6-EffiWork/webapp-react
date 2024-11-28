@@ -39,9 +39,13 @@ const CardDate = React.memo(({ card }: CardProps) => {
   };
 
   const callApiUpdateCard = async (status: boolean) => {
-    await updateCardStatusAPI(card._id, card.columnId, status)
-    dispatch(updateCardStatus({ cardId: card._id, columnId: card.columnId, status }))
+    await updateCardStatusAPI(card._id, card?.columnId || '', status)
+    dispatch(updateCardStatus({ cardId: card._id, columnId: card?.columnId || '', status }))
   };
+
+  if (!card || !status) {
+    return null
+  }
 
   const isCardDue = new Date().getTime() > card.dueDate;
   const isNearDue = new Date(card.dueDate).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000 && !isCardDue;
@@ -50,7 +54,7 @@ const CardDate = React.memo(({ card }: CardProps) => {
     <Box
       onClick={(e) => {
         e.stopPropagation();
-        callApiUpdateCard(!status[card.columnId]);
+        callApiUpdateCard(!status[card?.columnId || '']);
       }}
       sx={{
         display: 'flex',
@@ -66,10 +70,10 @@ const CardDate = React.memo(({ card }: CardProps) => {
         width: 'fit-content',
         paddingY: 0.5,
         paddingX: 1,
-        color: status[card.columnId] || isCardDue ? 'white' : 'black',
+        color: status[card?.columnId || ''] || isCardDue ? 'white' : 'black',
         borderRadius: 1,
         backgroundColor: (theme) => {
-          if (status[card.columnId]) {
+          if (status[card?.columnId || '']) {
             return color.success[80];
           }
           if (isNearDue) {
@@ -83,7 +87,7 @@ const CardDate = React.memo(({ card }: CardProps) => {
         <WatchIcon />
       </Box>
       <Box className="checkbox" sx={{ display: 'none' }}>
-        {status[card.columnId] ? <CheckBox /> : <CheckBoxOutlineBlankOutlined />}
+        {status[card?.columnId || ''] ? <CheckBox /> : <CheckBoxOutlineBlankOutlined />}
       </Box>
       <Typography>{`${convertDate(card.startDate)} - ${convertDate(card.dueDate)}`}</Typography>
     </Box>
