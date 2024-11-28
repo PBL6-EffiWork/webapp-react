@@ -185,16 +185,21 @@ const Tasks: React.FC<TasksProps> = ({ cardId, boardId }) => {
                   </Button>
                 </div>
               ) : (
-                <label 
-                htmlFor={`subtask-${subtask._id}`}
-                className={`flex-grow ${subtask.completed ? 'line-through text-muted-foreground' : ''} cursor-pointer hover:bg-gray-200 rounded-md p-2`}
-                onClick={() => {
-                  setEditingSubtask(subtask._id)
-                  setEditedSubtaskText(subtask.title)
-                }}
-              >
-                {subtask.title || 'Untitled Subtask'}
-              </label>
+                <div>
+                  <label 
+                    htmlFor={`subtask-${subtask._id}`}
+                    className={`flex-grow ${subtask.completed ? 'line-through text-muted-foreground' : ''} cursor-pointer hover:bg-gray-200 rounded-md p-2`}
+                    onClick={() => {
+                    setEditingSubtask(subtask._id)
+                    setEditedSubtaskText(subtask.title)
+                    }}
+                  >
+                    {subtask.title || 'Untitled Subtask'}
+                  </label>
+                  {subtask.completed ? <label className="text-xs text-gray-500">
+                    {new Date(subtask.updatedAt || 0).toLocaleString()}
+                  </label> : null}
+                </div>
             )}
             </div>
           ))}
