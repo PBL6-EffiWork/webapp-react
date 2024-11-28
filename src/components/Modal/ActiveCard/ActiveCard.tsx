@@ -54,6 +54,7 @@ import { SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, Sel
 import SelectColumn from './SelectColumn'
 import { useSearchParams } from 'react-router-dom'
 import { loadCardStatusThunk, selectCardStatus, updateCardStatus } from '../../../redux/board/boardSlice'
+import { Card } from '../../../interfaces/card'
 
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -305,7 +306,7 @@ function ActiveCard() {
                   />
                 )}
                 {currentTab === 1 && (
-                  <CardHistory histories={histories} boardId={activeCard?.boardId} />
+                  <CardHistory histories={histories} boardId={activeCard?.boardId} card={activeCard as Card} />
                 )}
               </Box>
             </Box>
