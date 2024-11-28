@@ -18,6 +18,7 @@ import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 
 import MyCalendar from './pages/Calendar/Calendar';
+import { Can, RoleProvider } from './context/RoleContext'
 
 // Styled components for layout
 const MainLayout = styled('div')({
@@ -57,10 +58,10 @@ const ProtectedRoute = ({ user }) => {
 function App() {
   const currentUser = useSelector(selectCurrentUser)
 
-
   return (
-    <SidebarProvider>
-      <MainLayout>
+    <RoleProvider initialRole={currentUser?.role || 'client'}>
+      <SidebarProvider>
+        <MainLayout>
         {currentUser && <AppSidebar />}
         <MainContent>
           {currentUser && <AppBar />}
@@ -103,6 +104,7 @@ function App() {
         </MainContent>
       </MainLayout>
     </SidebarProvider>
+    </RoleProvider>
   )
 }
 

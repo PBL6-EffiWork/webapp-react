@@ -28,6 +28,8 @@ import BoardTable from './BoardTable/BoardTable'
 import { Column } from '../../interfaces/column'
 import { Card } from '../../interfaces/card'
 import { loadCardsStatusOfBoardThunk, loadMembersBoardThunk } from '../../redux/board/boardSlice'
+import { useAbility } from '@casl/react'
+import { useRole } from '../../context/RoleContext'
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -58,6 +60,8 @@ function Board() {
   const error = useSelector(selectError);
   const [value, setValue] = useState(0);
 
+  const { ability } = useRole()
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -65,6 +69,8 @@ function Board() {
   const { boardId } = useParams()
 
   useEffect(() => {
+
+    console.log(ability);
     // Call API
     if (!boardId) {
       return;
