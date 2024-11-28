@@ -43,6 +43,11 @@ const items = [
     url: "/calendar",
     icon: Calendar,
   },
+  {
+    title: "Admin",
+    url: "/admin",
+    icon: Calendar,
+  }
 ]
 
 const profileItems = [

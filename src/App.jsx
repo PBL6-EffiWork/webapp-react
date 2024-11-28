@@ -15,6 +15,7 @@ import { SidebarTrigger, SidebarProvider } from './components/ui/sidebar'
 import { useEffect } from 'react'
 import { Box } from '@mui/material'
 import Dashboard from './pages/Dashboard'
+import Admin from './pages/Admin'
 
 import MyCalendar from './pages/Calendar/Calendar';
 
@@ -81,7 +82,8 @@ function App() {
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
                   <Route path='/dashboard' element={<Dashboard id={currentUser?._id} />} />
-
+                  <Route path='/admin' element={<Admin />} />
+                  {/* Calendar Routes */}
                 <Route path='/calendar' element={<MyCalendar />} />
 
                 {/* Settings Routes */}
