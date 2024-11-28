@@ -81,14 +81,6 @@ function CardHistory({ histories, boardId, card }: CardHistoryProps) {
   const currentUser = useSelector(selectCurrentUser)
   const [selectedTypes, setSelectedTypes] = useState<Set<History['type']>>(() => new Set(Object.keys(historyTypeLabels) as History['type'][]));
 
-  if (!histories || histories.length === 0) {
-    return (
-      <Typography variant="body1" color="text.secondary" className="text-center mt-4">
-        No history available.
-      </Typography>
-    );
-  }
-
   const handleSelectAll = () => {
     setSelectedTypes(new Set(Object.keys(historyTypeLabels) as History['type'][]));
   };
@@ -291,6 +283,14 @@ function CardHistory({ histories, boardId, card }: CardHistoryProps) {
     const allTypes = Object.keys(historyTypeLabels) as History['type'][];
     setSelectedTypes(new Set(allTypes));
   }, []);
+
+  if (!histories || histories.length === 0) {
+    return (
+      <Typography variant="body1" color="text.secondary" className="text-center mt-4">
+        No history available.
+      </Typography>
+    );
+  }
 
   return (
     <Box>
