@@ -20,31 +20,33 @@ import { useAppDispatch } from "../../hooks/useAppDispatch"
 import { logoutUserAPI } from "../../redux/user/userSlice"
 import { Button } from "../ui/button"
 import { Box, Typography } from "@mui/material"
+import { useTranslation } from "react-i18next"
+import { useMemo } from "react"
 
 // Menu items.
 const items = [
   {
-    title: "Home",
+    title: "home",
     url: "/dashboard",
     icon: Home,
   },
   {
-    title: "Board",
+    title: "board",
     url: "/boards",
     icon: FolderKanban,
   },
   {
-    title: "Inbox",
+    title: "inbox",
     url: "#",
     icon: Inbox,
   },
   {
-    title: "Calendar",
+    title: "calendar",
     url: "/calendar",
     icon: Calendar,
   },
   {
-    title: "Admin",
+    title: "admin",
     url: "/admin",
     icon: Calendar,
   }
@@ -52,12 +54,12 @@ const items = [
 
 const profileItems = [
   {
-    title: "Profile",
+    title: "profile",
     url: "/settings/account",
     icon: CircleUser,
   },
   {
-    title: "Logout",
+    title: "logout",
     icon: LogOut,
   },
 ]
@@ -74,6 +76,14 @@ export function AppSidebar() {
       dispatch(logoutUserAPI(true))
     }).catch(() => {})
   }
+
+  const { t } = useTranslation();
+
+  const menuItems = useMemo(() => items.map((item) => ({
+    ...item,
+    title: t(`${item.title}`)
+  })), [t])
+
   return (
     <Sidebar>
       <SidebarHeader >
@@ -86,7 +96,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url}>

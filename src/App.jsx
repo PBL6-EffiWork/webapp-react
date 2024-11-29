@@ -19,6 +19,7 @@ import Admin from './pages/Admin'
 
 import MyCalendar from './pages/Calendar/Calendar';
 import { Can, RoleProvider } from './context/RoleContext'
+import { useTranslation } from 'react-i18next'
 
 // Styled components for layout
 const MainLayout = styled('div')({
@@ -57,6 +58,11 @@ const ProtectedRoute = ({ user }) => {
 
 function App() {
   const currentUser = useSelector(selectCurrentUser)
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    i18n.changeLanguage(localStorage.getItem('i18nextLng') || 'en');
+  }, []);
 
   return (
     <RoleProvider initialRole={currentUser?.role || 'client'}>
@@ -82,15 +88,17 @@ function App() {
                   {/* Board Routes */}
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
-                  <Route path='/dashboard' element={<Dashboard id={currentUser?._id} />} />
                   <Route path='/admin' element={<Admin />} />
                   {/* Calendar Routes */}
-                <Route path='/calendar' element={<MyCalendar />} />
+                  <Route path='/calendar' element={<MyCalendar />} />
 
-                {/* Settings Routes */}
-                <Route path='/settings/account' element={<Settings />} />
-                <Route path='/settings/security' element={<Settings />} />
-              </Route>
+                  {/* Settings Routes */}
+                  <Route path='/settings/account' element={<Settings />} />
+                  <Route path='/settings/security' element={<Settings />} />
+
+                  {/* Dashboard Routes */}
+                  <Route path='/dashboard' element={<Dashboard id={currentUser?._id} />} />
+                </Route>
 
               {/* Authentication Routes */}
               <Route path='/login' element={<Auth />} />
