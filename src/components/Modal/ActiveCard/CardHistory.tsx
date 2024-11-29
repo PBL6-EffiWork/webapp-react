@@ -90,6 +90,7 @@ function CardHistory({ histories, boardId, card }: CardHistoryProps) {
   };
 
   const filteredHistories = useMemo(() => {
+    if (!histories) return [];  
     return histories.filter(history => selectedTypes.has(history.type));
   }, [histories, selectedTypes]);
 
@@ -307,6 +308,7 @@ function CardHistory({ histories, boardId, card }: CardHistoryProps) {
             }}
             renderInput={(params) => (
               <TextField
+                key={`filter-history-type-${params.id}`}
                 {...params}
                 variant="outlined"
                 label="Filter by History Type"

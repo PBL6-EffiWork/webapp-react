@@ -8,47 +8,49 @@ import { Card as CardType } from '../../interfaces/card';
 import { formatDate } from '../../utils/time';
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { useRole } from '../../context/RoleContext';
 
 function Dashboard({id}: {id: string}) {
-    const [stats, setStats] = useState({
-        users: 0,
-        projects: 0,
-        cards: 0,
-        topCards: [],
-        events: 0
-    });
+  const { ability } = useRole()
+  const [stats, setStats] = useState({
+      users: 0,
+      projects: 0,
+      cards: 0,
+      topCards: [],
+      events: 0
+  });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [
-                    userData,
-                    projectData, 
-                    cardData,
-                    topCardData,
-                    eventData
-                ] = await Promise.all([
-                    countUser(),
-                    countBoard(id),
-                    countCard('year', id),
-                    top5Cards(id),
-                    countEvent(id)
-                ]);
+  useEffect(() => {
+      const fetchData = async () => {
+          try {
+              const [
+                  userData,
+                  projectData, 
+                  cardData,
+                  topCardData,
+                  eventData
+              ] = await Promise.all([
+                  countUser(),
+                  countBoard(id),
+                  countCard('year', id),
+                  top5Cards(id),
+                  countEvent(id)
+              ]);
 
-                setStats({
-                    users: userData.total,
-                    projects: projectData.total,
-                    cards: cardData.total,
-                    topCards: topCardData,
-                    events: eventData.total
-                });
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-            }
-        };
+              setStats({
+                  users: userData.total,
+                  projects: projectData.total,
+                  cards: cardData.total,
+                  topCards: topCardData,
+                  events: eventData.total
+              });
+          } catch (error) {
+              console.error('Error fetching dashboard data:', error);
+          }
+      };
 
-        fetchData();
-    }, [id]);
+      fetchData();
+  }, [id]);
 
   const getDiffDate = (dueDate: any) => {
     if (!dueDate) return 0;
@@ -79,6 +81,7 @@ function Dashboard({id}: {id: string}) {
                 { name: "Project 4", completion: 91 },
                 { name: "Project 5", completion: 94 },
               ]
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
       <main className="container mx-auto">
@@ -102,7 +105,8 @@ function Dashboard({id}: {id: string}) {
               </svg>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{stats.projects}</div>
+                {/* <div className="text-2xl font-bold">{stats.projects}</div> */}
+                <span className="text-2xl font-bold">{stats.projects}</span>
               {/* <p className="text-xs text-muted-foreground">+20.1% so với tháng trước</p> */}
             </CardContent>
           </Card>
@@ -187,10 +191,10 @@ function Dashboard({id}: {id: string}) {
                     <TableHead>Name</TableHead>
                     <TableHead>Board</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Due date</TableHead>
-                    <TableHead className="text-right">Created at</TableHead>
-                    <TableHead className="text-right">Updated at</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>Due date</TableHead>
+                    <TableHead>Created at</TableHead>
+                    <TableHead>Updated at</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -200,7 +204,7 @@ function Dashboard({id}: {id: string}) {
                       <TableCell>{card.title}</TableCell>
                       <TableCell>{card.boardName}</TableCell>
                       <TableCell>{card.columnName}</TableCell>
-                      <TableCell className={`text-right`}>
+                      <TableCell>
                         <span className={`${getColor(getDiffDate(card.dueDate))} ${getBackgroundColor(getDiffDate(card.dueDate))} rounded-md px-2 py-1 font-medium`}>
                           {(() => {
                             if (!card.dueDate) return "Today";
@@ -216,9 +220,9 @@ function Dashboard({id}: {id: string}) {
                           })()}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right">{formatDate(card.createdAt)}</TableCell>
-                      <TableCell className="text-right">{formatDate(card.updatedAt)}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell>{formatDate(card.createdAt)}</TableCell>
+                      <TableCell>{formatDate(card.updatedAt)}</TableCell>
+                      <TableCell>
                         <Link to={`/boards/${card.boardId}?cardId=${card._id}`}>
                           <Button variant="outlined" size="small">View</Button>
                         </Link>
