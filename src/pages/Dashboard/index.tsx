@@ -4,50 +4,81 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
 
 import { countBoard, countCard, countUser, top5Cards, countEvent } from '../../apis/index';
+import { Card as CardType } from '../../interfaces/card';
+import { formatDate } from '../../utils/time';
+import { Button } from '@mui/material';
+import { Link } from 'react-router-dom';
 
-function Dashboard({id}: any) {
-    const [totalUsers, setTotalUsers] = useState([]);
-    useEffect(() => {
-        countUser()
-        .then(data => setTotalUsers(data.total))
-        .catch(error => console.error(error));
-    }, []);
+function Dashboard({id}: {id: string}) {
+    const [stats, setStats] = useState({
+        users: 0,
+        projects: 0,
+        cards: 0,
+        topCards: [],
+        events: 0
+    });
 
-    const [totalProjects, setTotalProjects] = useState([]);
     useEffect(() => {
-        countBoard(id)
-        .then(data => setTotalProjects(data.total))
-        .catch(error => console.error(error));
-    }, []); 
+        const fetchData = async () => {
+            try {
+                const [
+                    userData,
+                    projectData, 
+                    cardData,
+                    topCardData,
+                    eventData
+                ] = await Promise.all([
+                    countUser(),
+                    countBoard(id),
+                    countCard('year', id),
+                    top5Cards(id),
+                    countEvent(id)
+                ]);
 
-    const [topcards, setTopcards] = useState([]);
-    useEffect(() => {
-        top5Cards(id)
-        .then(data => setTopcards(data))
-        .catch(error => console.error(error));
-    }, []);
-    
-    const [totalCards, setTotalCards] = useState([]);
-    useEffect(() => {
-        countCard('year',id)
-        .then(data => setTotalCards(data.total))        
-        .catch(error => console.error(error));
-    }, []);
+                setStats({
+                    users: userData.total,
+                    projects: projectData.total,
+                    cards: cardData.total,
+                    topCards: topCardData,
+                    events: eventData.total
+                });
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        };
 
-    const [totalEvents, setTotalEvents] = useState([]);
-    useEffect(() => {
-        countEvent(id)
-        .then(data => setTotalEvents(data.total))
-        .catch(error => console.error(error));
-    }, []);
+        fetchData();
+    }, [id]);
 
-    const data = [
-                  { name: "Project 1", completion: 90 },
-                  { name: "Project 2", completion: 95 },
-                  { name: "Project 3", completion: 92 },
-                  { name: "Project 4", completion: 91 },
-                  { name: "Project 5", completion: 94 },
-                ]
+  const getDiffDate = (dueDate: any) => {
+    if (!dueDate) return 0;
+
+    const daysDiff = Math.floor(
+      (new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+
+    return daysDiff;
+  }
+
+  const getColor = (daysDiff: number) => {
+    if (daysDiff === 0) return 'text-yellow-600';
+    if (daysDiff < 0) return 'text-red-600';
+    return 'text-green-600';
+  }
+
+  const getBackgroundColor = (daysDiff: number) => {
+    if (daysDiff === 0) return 'bg-yellow-100';
+    if (daysDiff < 0) return 'bg-red-100';
+    return 'bg-green-100';
+  }
+
+  const data = [
+                { name: "Project 1", completion: 90 },
+                { name: "Project 2", completion: 95 },
+                { name: "Project 3", completion: 92 },
+                { name: "Project 4", completion: 91 },
+                { name: "Project 5", completion: 94 },
+              ]
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
       <main className="container mx-auto">
@@ -71,7 +102,7 @@ function Dashboard({id}: any) {
               </svg>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{totalProjects}</div>
+                <div className="text-2xl font-bold">{stats.projects}</div>
               {/* <p className="text-xs text-muted-foreground">+20.1% so với tháng trước</p> */}
             </CardContent>
           </Card>
@@ -94,7 +125,7 @@ function Dashboard({id}: any) {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalCards}</div>
+              <div className="text-2xl font-bold">{stats.cards}</div>
               {/* <p className="text-xs text-muted-foreground">+180.1% so với tháng trước</p> */}
             </CardContent>
           </Card>
@@ -116,7 +147,7 @@ function Dashboard({id}: any) {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalEvents}</div>
+              <div className="text-2xl font-bold">{stats.events}</div>
               {/* <p className="text-xs text-muted-foreground">+19% so với tháng trước</p> */}
             </CardContent>
           </Card>
@@ -143,7 +174,7 @@ function Dashboard({id}: any) {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-1">
           <Card>
             <CardHeader>
               <CardTitle>Top 5 tasks about to expire</CardTitle>
@@ -154,25 +185,43 @@ function Dashboard({id}: any) {
                   <TableRow>
                     <TableHead className="w-[100px]">Top</TableHead>
                     <TableHead>Name</TableHead>
-                    {/* <TableHead>Status</TableHead> */}
+                    <TableHead>Board</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Due date</TableHead>
+                    <TableHead className="text-right">Created at</TableHead>
+                    <TableHead className="text-right">Updated at</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {topcards.map((card, index) => (
+                  {stats.topCards.map((card: CardType, index) => (
                     <TableRow key={card.title}>
                       <TableCell className="font-medium">{index + 1}</TableCell>
-                      {/* <TableCell>{card.cover}</TableCell> */}
                       <TableCell>{card.title}</TableCell>
+                      <TableCell>{card.boardName}</TableCell>
+                      <TableCell>{card.columnName}</TableCell>
+                      <TableCell className={`text-right`}>
+                        <span className={`${getColor(getDiffDate(card.dueDate))} ${getBackgroundColor(getDiffDate(card.dueDate))} rounded-md px-2 py-1 font-medium`}>
+                          {(() => {
+                            if (!card.dueDate) return "Today";
+      
+                            const daysDiff = getDiffDate(card.dueDate);
+                            const absDaysDiff = Math.abs(daysDiff);
+
+                            if (daysDiff === 0) return "Today";
+                            if (daysDiff < 0) {
+                              return absDaysDiff === 1 ? "Yesterday" : `${absDaysDiff} days late`;
+                            };
+                            return daysDiff === 1 ? "Tomorrow" : `${daysDiff} days left`;
+                          })()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">{formatDate(card.createdAt)}</TableCell>
+                      <TableCell className="text-right">{formatDate(card.updatedAt)}</TableCell>
                       <TableCell className="text-right">
-                        { 
-                          card.dueDate !== null 
-                          ? ( Math.floor((new Date(card.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) === 0
-                              ? "Today"
-                              : `${Math.floor((new Date(card.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days`
-                            ) 
-                          : "Today"
-                        }
+                        <Link to={`/boards/${card.boardId}?cardId=${card._id}`}>
+                          <Button variant="outlined" size="small">View</Button>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -181,7 +230,7 @@ function Dashboard({id}: any) {
             </CardContent>
           </Card>
 
-          <Card className="grid gap-6 md:grid-cols">
+          {/* <Card className="grid gap-6 md:grid-cols">
             <CardHeader>
               <CardTitle className="font-bold text-emerald-800">Top 5 Projects About to be Completed</CardTitle>
               <CardDescription className="text-sm text-emerald-600">Project completion percentages</CardDescription>
@@ -226,7 +275,7 @@ function Dashboard({id}: any) {
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </main>
     </div>

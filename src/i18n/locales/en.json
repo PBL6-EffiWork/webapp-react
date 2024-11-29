@@ -1,0 +1,10 @@
+{
+  "common": {
+    "home": "Home",
+    "board": "Board",
+    "card": "Card",
+    "calendar": "Calendar",
+    "admin": "Admin",
+    "inbox": "Inbox"
+  }
+}
