@@ -10,6 +10,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  FilterFn,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
@@ -39,16 +40,31 @@ import { selectBoardMembersId } from "../../../redux/board/boardSlice"
 import { User } from "../../../interfaces/user"
 import BoardUserGroup from "../BoardBar/BoardUserGroup"
 
+// Định nghĩa các hàm filter tùy chỉnh
+const memberFilter: FilterFn<BoardTableRow> = (row, columnId, filterValue) => {
+  const members = row.getValue(columnId) as User[] | undefined
+  if (!members || !filterValue || filterValue.length === 0) return true
+  return members.some(member => filterValue.includes(member._id))
+}
+
+const statusFilter: FilterFn<BoardTableRow> = (row, columnId, filterValue) => {
+  const status = row.getValue(columnId) as string
+  if (!filterValue || filterValue.length === 0) return true
+  return filterValue.includes(status)
+}
+
 const columns: ColumnDef<BoardTableRow>[] = [
   {
     accessorKey: "title",
     header: "Title",
     cell: ({ row }) => <div className="capitalize">{row.getValue("title")}</div>,
+    filterFn: "includesString",
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => <div className="capitalize">{row.getValue("status")}</div>,
+    filterFn: statusFilter,
   },
   {
     accessorKey: "members",
@@ -58,6 +74,7 @@ const columns: ColumnDef<BoardTableRow>[] = [
       if (!members) return null
       return <BoardUserGroup boardUsers={members} limit={3} size={28} />
     },
+    filterFn: memberFilter,
   },
   {
     accessorKey: "startDate",
@@ -130,7 +147,34 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  
   const members = useSelector(selectBoardMembersId(boardId))
+
+  // Lấy các giá trị duy nhất cho filter Status
+  const statusOptions = React.useMemo(() => {
+    const statuses = new Set<string>()
+    data.forEach(column => {
+      statuses.add(column.title)
+    })
+    return Array.from(statuses)
+  }, [data])
+
+  // Lấy các giá trị thành viên
+  const memberOptions = React.useMemo(() => {
+    return (members || []).map(member => ({
+      id: member._id,
+      name: member.displayName,
+    }))
+  }, [members])
+
+  // Xác định các tùy chọn filter
+  const filterOptions = [
+    { value: "status", label: "Status" },
+    { value: "members", label: "Members" },
+  ]
+
+  // Cập nhật columnFilters khi filter được chọn
+  // Không cần sử dụng selectedFilter và filterValue riêng lẻ nữa
 
   const tableData: BoardTableRow[] = React.useMemo(() => {
     return data.flatMap((column) =>
@@ -143,7 +187,7 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
         dueDate: card.dueDate,
       }))
     )
-  }, [data])
+  }, [data, members])
 
   const table = useReactTable({
     data: tableData,
@@ -162,19 +206,126 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
       columnVisibility,
       rowSelection,
     },
+    // Đăng ký các hàm filter tùy chỉnh
+    filterFns: {
+      includesString: (row, columnId, filterValue: string[]) => {
+        const rowValue = row.getValue(columnId)
+        if (typeof rowValue !== "string") return false
+        return filterValue.some(value => rowValue.toLowerCase().includes(value.toLowerCase()))
+      },
+      memberFilter: memberFilter,
+      statusFilter: statusFilter,
+    },
   })
+
+  // Quản lý trạng thái filter
+  const [activeFilters, setActiveFilters] = React.useState<{
+    status: string[]
+    members: string[]
+  }>({
+    status: [],
+    members: [],
+  })
+
+  const handleFilterChange = (filterName: "status" | "members", value: string, checked: boolean) => {
+    setActiveFilters(prev => {
+      const currentValues = prev[filterName]
+      if (checked) {
+        return {
+          ...prev,
+          [filterName]: [...currentValues, value],
+        }
+      } else {
+        return {
+          ...prev,
+          [filterName]: currentValues.filter(v => v !== value),
+        }
+      }
+    })
+  }
+
+  // Cập nhật columnFilters từ activeFilters
+  React.useEffect(() => {
+    const newFilters: ColumnFiltersState = []
+
+    if (activeFilters.status.length > 0) {
+      newFilters.push({
+        id: "status",
+        value: activeFilters.status,
+      })
+    }
+
+    if (activeFilters.members.length > 0) {
+      newFilters.push({
+        id: "members",
+        value: activeFilters.members,
+      })
+    }
+
+    setColumnFilters(newFilters)
+  }, [activeFilters])
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter titles..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      <div className="flex flex-wrap items-center justify-between py-4 space-x-4">
+        <div className="flex items-center space-x-2">
+          <Input
+            placeholder="Filter titles..."
+            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("title")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+
+          {/* Dropdown để chọn và quản lý nhiều bộ lọc */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Filters <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+              
+              {filterOptions.map(option => (
+                <div key={option.value} className="px-4 py-2">
+                  <div className="font-semibold mb-2">{option.label}</div>
+                  <div className="flex flex-col space-y-1">
+                    {option.value === "status" && statusOptions.map(status => (
+                      <label key={status} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={activeFilters.status.includes(status)}
+                          onChange={(e) => handleFilterChange("status", status, e.target.checked)}
+                        />
+                        <span>{status}</span>
+                      </label>
+                    ))}
+                    {option.value === "members" && memberOptions.map(member => (
+                      <label key={member.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={activeFilters.members.includes(member.id)}
+                          onChange={(e) => handleFilterChange("members", member.id, e.target.checked)}
+                        />
+                        <span>{member.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Nút Clear All Filters */}
+          {(activeFilters.status.length > 0 || activeFilters.members.length > 0) && (
+            <Button variant="ghost" onClick={() => setActiveFilters({ status: [], members: [] })}>
+              Clear All Filters
+            </Button>
+          )}
+        </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
