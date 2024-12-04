@@ -33,6 +33,7 @@ import ToggleFocusInput from '../../../components/Form/ToggleFocusInput'
 import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { loadCardStatusThunk } from '../../../redux/board/boardSlice'
 
 interface ColumnProps {
   column: {
@@ -115,6 +116,10 @@ function Column({ column }: ColumnProps) {
     }
     // setBoard(newBoard)
     dispatch(updateCurrentActiveBoard(newBoard as any))
+    dispatch(loadCardStatusThunk({
+      cardId: createdCard._id,
+      boardId: board?._id as string
+    }))
 
     // Đóng trạng thái thêm Card mới & Clear Input
     toggleOpenNewCardForm()
