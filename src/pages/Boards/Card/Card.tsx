@@ -138,34 +138,42 @@ function Card({ card, activeCardId }: CardProps) {
       onClick={setActiveCard}
       ref={setNodeRef} style={dndKitCardStyles} {...attributes} {...listeners}
       sx={{
-        cursor: 'pointer',
-        boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
-        overflow: 'unset',
-        display: card?.FE_PlaceholderCard ? 'none' : 'block',
-        border: '1px solid transparent',
-        '&:hover': { borderColor: (theme) => theme.palette.primary.main }
-        // overflow: card?.FE_PlaceholderCard ? 'hidden' : 'unset',
-        // height: card?.FE_PlaceholderCard ? '0px' : 'unset'
+      cursor: 'pointer',
+      boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
+      overflow: 'unset',
+      display: card?.FE_PlaceholderCard ? 'none' : 'block',
+      border: '1px solid transparent',
+      '&:hover': { borderColor: (theme) => theme.palette.primary.main }
       }}
     >
       {card?.cover && <CardMedia sx={{ height: 140, borderRadius: 1 }} image={card?.cover} /> }
       <CardContent sx={{ p: 1.5, '&:last-child': { p: 1.5 } }}>
-        <Typography>{card?.title}</Typography>
+      <Typography sx={{ 
+        wordBreak: 'break-word',
+        whiteSpace: 'normal',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}>
+        {card?.title}
+      </Typography>
       </CardContent>
+      {/* Rest of the code remains the same */}
       {
-        !!card?.dueDate && <CardDate card={card} />
+      !!card?.dueDate && <CardDate card={card} />
       }
       {!!comments?.length &&
-        <Button size="medium" startIcon={<CommentIcon />}>{comments?.length}</Button>
+      <Button size="medium" startIcon={<CommentIcon />}>{comments?.length}</Button>
       }
       {!!card?.attachments?.length &&
-        <Button size="medium" startIcon={<AttachmentIcon />}>{card?.attachments?.length}</Button>
+      <Button size="medium" startIcon={<AttachmentIcon />}>{card?.attachments?.length}</Button>
       }
       <Box sx={{ display: 'flex', flexDirection:'row-reverse', alignItems: 'center', paddingBottom: 1, paddingRight: 1 }}>
-        {!!card?.memberIds?.length &&
-          // <Button size="small" startIcon={<GroupIcon />}>{card?.memberIds?.length}</Button>
-          <BoardUserGroup boardUsers={(membersBoard || []).filter(user => card.memberIds.includes(user._id))} limit={3} size={24} />
-        }
+      {!!card?.memberIds?.length &&
+        <BoardUserGroup boardUsers={(membersBoard || []).filter(user => card.memberIds.includes(user._id))} limit={3} size={24} />
+      }
       </Box>
     </MuiCard>
   )
