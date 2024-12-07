@@ -5,6 +5,28 @@
     "card": "Card",
     "calendar": "Calendar",
     "admin": "Admin",
-    "inbox": "Inbox"
+    "inbox": "Inbox",
+    "roles": {
+      "client": "Member",
+      "admin": "Admin",
+      "manager": "Manager"
+    },
+    "update": "Update",
+    "active": "Active",
+    "inactive": "Inactive",
+    "selected": "Selected",
+    "displayName": "Name",
+    "email": "Email",
+    "role": "Role",
+    "isActive": "Status",
+    "actions": "Actions",
+    "upcomingTask": "Upcoming Task",
+    "dueDateTask": "Due Date",
+    "createdAt": "Created At"
+  },
+  "settings": {
+    "security": "Security Settings",
+    "account": "Account Settings",
+    "general": "General Information"
   }
 }

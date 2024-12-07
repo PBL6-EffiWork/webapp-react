@@ -1,8 +1,10 @@
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "../../interfaces/user";
-import { getCardStatusAPI, getCardStatusOfBoardAPI, getMembersOfBoardAPI } from "../../apis";
+import { getCardStatusAPI, getCardStatusOfBoardAPI, getMembersOfBoardAPI, getUpcomingTaskAPI, removeMemberFromBoardAPI } from "../../apis";
 import { CardStatus } from "../../interfaces/task";
 import { get } from "lodash";
+import { Card } from "../../interfaces/card";
+import { toast } from "react-toastify";
 
 interface BoardState {
   members: {
@@ -12,12 +14,16 @@ interface BoardState {
     [key: string]: {
       [key: string]: boolean
     }
+  },
+  upcomingTask: {
+    [key: string]: Card
   }
 }
 
 const initialState: BoardState = {
   members: {},
-  cardStatus: {}
+  cardStatus: {},
+  upcomingTask: {}
 }
 
 export const loadMembersBoardThunk = createAsyncThunk(
@@ -44,6 +50,22 @@ export const loadCardsStatusOfBoardThunk = createAsyncThunk(
   }
 )
 
+export const loadUpcomingTaskThunk = createAsyncThunk(
+  'board/loadUpcomingTask',
+  async (memberId: string) => {
+    const response = await getUpcomingTaskAPI(memberId)
+    return {memberId, upcomingTask: response}
+  }
+)
+
+export const removeMemberFromBoardThunk = createAsyncThunk(
+  'board/removeMemberFromBoard',
+  async ({boardId, memberId}: {boardId: string, memberId: string}) => {
+    const response = await removeMemberFromBoardAPI(boardId, memberId)
+    return {boardId, memberId, response}
+  }
+)
+
 export const boardSlice = createSlice({
   name: 'board',
   initialState,
@@ -55,39 +77,47 @@ export const boardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(loadMembersBoardThunk.fulfilled, (state, action) => {
-      const { boardId, members } = action.payload
-      state.members[boardId] = members
-    }),
-    builder.addCase(loadMembersBoardThunk.rejected, (state, action) => {
-      // console.log(action.error)
-    }),
-    builder.addCase(loadMembersBoardThunk.pending, (state) => {
-      // console.log('loading')
-    }),
-    builder.addCase(loadCardStatusThunk.fulfilled, (state, action) => {
-      const { boardId, cardId, cardStatus } = action.payload
-      state.cardStatus[cardId] = get(cardStatus, 'status', {})
-    }),
-    builder.addCase(loadCardStatusThunk.rejected, (state, action) => {
-      // console.log(action.error)
-    }),
-    builder.addCase(loadCardStatusThunk.pending, (state) => {
-      // console.log('loading')
-    }),
-    builder.addCase(loadCardsStatusOfBoardThunk.fulfilled, (state, action) => {
-      const { cardStatus } = action.payload
-      // Update card status of board [{cardId: status}]
-      // save to cardStatus[cardId] = status
-      cardStatus.forEach((card: CardStatus) => {
-        state.cardStatus[card.cardId] = card.status
-      })
-    }),
-    builder.addCase(loadCardsStatusOfBoardThunk.rejected, (state, action) => {
-      // console.log(action.error)
-    }),
-    builder.addCase(loadCardsStatusOfBoardThunk.pending, (state) => {
-      // console.log('loading')
+      const { boardId, members } = action.payload;
+      state.members[boardId] = members;
     })
+    .addCase(loadMembersBoardThunk.rejected, () => {
+      toast.error('Failed to load members')
+    })
+    .addCase(loadMembersBoardThunk.pending, () => {})
+    .addCase(loadCardStatusThunk.fulfilled, (state, action) => {
+      const { cardId, cardStatus } = action.payload;
+      state.cardStatus[cardId] = get(cardStatus, 'status', {});
+    })
+    .addCase(loadCardStatusThunk.rejected, () => {
+      toast.error('Failed to load card status')
+    })
+    .addCase(loadCardStatusThunk.pending, () => {})
+    .addCase(loadCardsStatusOfBoardThunk.fulfilled, (state, action) => {
+      const { cardStatus } = action.payload;
+      cardStatus.forEach((card: CardStatus) => {
+        state.cardStatus[card.cardId] = card.status;
+      });
+    })
+    .addCase(loadCardsStatusOfBoardThunk.rejected, () => {
+      toast.error('Failed to load card status of board')
+    })
+    .addCase(loadCardsStatusOfBoardThunk.pending, () => {})
+    .addCase(loadUpcomingTaskThunk.fulfilled, (state, action) => {
+      const { memberId, upcomingTask } = action.payload;
+      state.upcomingTask[memberId] = upcomingTask;
+    })
+    .addCase(loadUpcomingTaskThunk.rejected, () => {
+      toast.error('Failed to load upcoming task')
+    })
+    .addCase(loadUpcomingTaskThunk.pending, () => {})
+    .addCase(removeMemberFromBoardThunk.fulfilled, (state, action) => {
+      const { boardId, memberId, response } = action.payload;
+      state.members[boardId] = state.members[boardId].filter((member) => member._id !== memberId);
+    })
+    .addCase(removeMemberFromBoardThunk.rejected, () => {
+      toast.error('Failed to remove member from board')
+    })
+    .addCase(removeMemberFromBoardThunk.pending, () => {})
   }
 })
 
@@ -108,4 +138,12 @@ export const selectBoardMembersId = (boardId: string) => createSelector(
 export const selectCardStatus = (cardId: string) => createSelector(
   selectBoardCardStatus,
   (cardStatus) => cardStatus[cardId]
+)
+
+const selectBoardUpcomingTask = (state: { board: BoardState }) => state.board.upcomingTask
+
+export const selectMembersUpcomingTask = (boardId: string) => createSelector(
+  selectBoardUpcomingTask,
+  selectBoardMembersId(boardId),
+  (upcomingTask, members) => members.map((member) => upcomingTask[member._id])
 )

@@ -21,18 +21,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User } from '../../../interfaces/user'
 import { useSelector } from 'react-redux'
 import { selectBoardMembersId } from '../../../redux/board/boardSlice'
+import { useTranslation } from 'react-i18next'
 
 interface MembersProps {
   button?: React.ReactNode;
   members?: User[];
 }
 
-export default function Component({ button, members }: MembersProps) {
+export default function Members({ button, members }: MembersProps) {
   const [isOpen, setIsOpen] = useState(false)
 
+  const { t } = useTranslation()
+
   return (
-    // The Dialog component will close when clicking outside of it
-    // This is handled by the `onOpenChange` prop
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {button || <Button variant="outline">Members</Button>}
@@ -61,7 +62,7 @@ export default function Component({ button, members }: MembersProps) {
                 </TableCell>
                 <TableCell>{member.displayName}</TableCell>
                 <TableCell>{member.email}</TableCell>
-                <TableCell>{member.role}</TableCell>
+                <TableCell>{t(`roles.${member.role}`)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

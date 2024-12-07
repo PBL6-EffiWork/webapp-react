@@ -5,6 +5,28 @@
     "card": "Thẻ",
     "calendar": "Lịch",
     "admin": "Quản trị",
-    "inbox": "Hộp thư"
+    "inbox": "Hộp thư",
+    "roles": {
+      "client": "Thành viên",
+      "admin": "Quản trị viên",
+      "manager": "Quản lý"
+    },
+    "update": "Cập nhật",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động", 
+    "selected": "Đã chọn",
+    "displayName": "Tên",
+    "email": "Email",
+    "role": "Vai trò",
+    "isActive": "Trạng thái",
+    "actions": "Hành động",
+    "upcomingTask": "Công việc sắp tới",
+    "dueDateTask": "Ngày hết hạn",
+    "createdAt": "Ngày tạo"
+  },
+  "settings": {
+    "security": "Cài đặt bảo mật",
+    "account": "Cài đặt tài khoản", 
+    "general": "Thông tin chung"
   }
 }

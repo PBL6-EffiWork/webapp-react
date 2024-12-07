@@ -1,202 +1,216 @@
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import Avatar from '@mui/material/Avatar'
-import Tooltip from '@mui/material/Tooltip'
-import TextField from '@mui/material/TextField'
-import InputAdornment from '@mui/material/InputAdornment'
-import Button from '@mui/material/Button'
-import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import MailIcon from '@mui/icons-material/Mail'
-import AccountBoxIcon from '@mui/icons-material/AccountBox'
-import AssignmentIndIcon from '@mui/icons-material/AssignmentInd'
+'use client'
+
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
+import { ActivityIcon as Attachment, Mail, User, Loader2, Upload, CheckIcon, UserRoundCog, UserRoundPen } from 'lucide-react'
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { FIELD_REQUIRED_MESSAGE, singleFileValidator } from '../../utils/validators'
 import FieldErrorAlert from '../../components/Form/FieldErrorAlert'
-import { useSelector } from 'react-redux'
 import { selectCurrentUser, updateUserAPI } from '../../redux/user/userSlice'
-import { useForm } from 'react-hook-form'
-import { toast } from 'react-toastify'
-import VisuallyHiddenInput from '../../components/Form/VisuallyHiddenInput'
 import { useAppDispatch } from '../../hooks/useAppDispatch'
+import { useTranslation } from 'react-i18next'
 
-function AccountTab() {
-  const dispatch = useAppDispatch()
-  const currentUser = useSelector(selectCurrentUser)
+function UserAvatar({ user, onUpload }: { user: any, onUpload: (file: File) => void }) {
+  const [isUploading, setIsUploading] = useState(false)
 
-  // Những thông tin của user để init vào form (key tương ứng với register phía dưới Field)
-  const initialGeneralForm = {
-    displayName: currentUser?.displayName
-  }
-  // Sử dụng defaultValues để set giá trị mặc định cho các field cần thiết
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: initialGeneralForm
-  })
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  const submitChangeGeneralInformation = (data: { displayName: string }) => {
-    const { displayName } = data
-
-    // Nếu không có sự thay đổi gì về displayname thì không làm gì cả
-    if (displayName === currentUser?.displayName) return
-
-    // Gọi API...
-    toast.promise(
-      dispatch(updateUserAPI({ displayName })),
-      { pending: 'Updating...' }
-    ).then((res: any) => {
-      // Đoạn này phải kiểm tra không có lỗi (update thành công) thì mới thực hiện các hành động cần thiết
-      if (!res.error) {
-        toast.success('User updated successfully!')
-      }
-    })
-  }
-
-  const uploadAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Lấy file thông qua e.target?.files[0] và validate nó trước khi xử lý
-    // console.log('e.target?.files[0]: ', e.target?.files[0])
-    if (!e.target?.files) return
-    const error = singleFileValidator(e.target.files[0])
+    const error = singleFileValidator(file)
     if (error) {
       toast.error(error)
       return
     }
 
-    // Sử dụng FormData để xử lý dữ liệu liên quan tới file khi gọi API
-    let reqData = new FormData()
-    reqData.append('avatar', e.target?.files[0])
-    // Cách để log được dữ liệu thông qua FormData
-    // console.log('reqData: ', reqData)
-    // for (const value of reqData.values()) {
-    //   console.log('reqData Value: ', value)
-    // }
-
-    // Gọi API...
-    toast.promise(
-      dispatch(updateUserAPI(reqData)),
-      { pending: 'Updating...' }
-    ).then((res: any) => {
-      // Đoạn này phải kiểm tra không có lỗi (update thành công) thì mới thực hiện các hành động cần thiết
-      if (!res.error) {
-        toast.success('User updated successfully!')
-      }
-      // Lưu ý, dù có lỗi hoặc thành công thì cũng phải clear giá trị của file input, nếu không thì sẽ không thể chọn cùng một file liên tiếp được
+    setIsUploading(true)
+    try {
+      await onUpload(file)
+      toast.success('Avatar updated successfully!')
+    } catch (error) {
+      toast.error('Failed to update avatar')
+    } finally {
+      setIsUploading(false)
       e.target.value = ''
-    })
+    }
   }
 
   return (
-    <Box sx={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <Box sx={{
-        maxWidth: '1200px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 3
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box>
-            <Avatar
-              sx={{ width: 84, height: 84, mb: 1 }}
-              alt="Effiwork"
-              src={currentUser?.avatar}
-            />
-            <Tooltip title="Upload a new image to update your avatar immediately.">
-              <Button
-                component="label"
-                variant="contained"
-                size="small"
-                startIcon={<CloudUploadIcon />}>
-                Upload
-                <VisuallyHiddenInput type="file" onChange={uploadAvatar} />
-              </Button>
-            </Tooltip>
-          </Box>
-          <Box>
-            <Typography variant="h6">{currentUser?.displayName}</Typography>
-            <Typography sx={{ color: 'grey' }}>@{currentUser?.username}</Typography>
-          </Box>
-        </Box>
-
-        <form onSubmit={handleSubmit(submitChangeGeneralInformation)}>
-          <Box sx={{ width: '400px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box>
-              <TextField
-                disabled
-                defaultValue={currentUser?.email}
-                fullWidth
-                label="Your Email"
-                type="text"
-                variant="filled"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <MailIcon fontSize="small" />
-                    </InputAdornment>
-                  )
-                }}
+    <div className="relative">
+      <Avatar className="w-24 h-24 border-4 border-background">
+        <AvatarImage src={user?.avatar} alt={user?.displayName} />
+        <AvatarFallback>{user?.displayName?.[0]?.toUpperCase()}</AvatarFallback>
+      </Avatar>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute bottom-0 right-0 rounded-full"
+              disabled={isUploading}
+            >
+              <Label htmlFor="avatar-upload" className="cursor-pointer">
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+              </Label>
+              <Input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={isUploading}
               />
-            </Box>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Upload a new avatar</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  )
+}
 
-            <Box>
-              <TextField
+function AccountTab() {
+  const dispatch = useAppDispatch()
+  const currentUser = useSelector(selectCurrentUser)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const { t } = useTranslation()
+
+  const initialGeneralForm = {
+    displayName: currentUser?.displayName
+  }
+
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: initialGeneralForm
+  })
+
+  const submitChangeGeneralInformation = async (data: { displayName: string }) => {
+    const { displayName } = data
+
+    if (displayName === currentUser?.displayName) return
+
+    setIsUpdating(true)
+    try {
+      const res = await dispatch(updateUserAPI({ displayName }))
+      if (res.type.endsWith('/fulfilled')) {
+        toast.success('User updated successfully!')
+      }
+    } catch (error) {
+      toast.error('Failed to update user')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const uploadAvatar = async (file: File) => {
+    let reqData = new FormData()
+    reqData.append('avatar', file)
+
+    const res = await dispatch(updateUserAPI(reqData))
+    if (res.type.endsWith('/rejected')) {
+      throw new Error('Failed to update avatar')
+    }
+  }
+
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="max-w-[1200px] flex flex-col items-center justify-center gap-8 bg-white p-8 rounded-lg">
+        <div className="flex items-center gap-6">
+          <UserAvatar user={currentUser} onUpload={uploadAvatar} />
+          <div className="flex flex-col gap-1 w-96">
+            <h2 className="text-2xl font-bold line-clamp-2">{currentUser?.displayName}</h2>
+            <p className="text-muted-foreground line-clamp-2">@{currentUser?.username}</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit(submitChangeGeneralInformation)} className="w-full max-w-md min-w-96 space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email">Your Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Your email"
+                value={currentUser?.email}
                 disabled
-                defaultValue={currentUser?.username}
-                fullWidth
-                label="Your Username"
-                type="text"
-                variant="filled"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccountBoxIcon fontSize="small" />
-                    </InputAdornment>
-                  )
-                }}
+                className="pl-8"
               />
-            </Box>
+            </div>
+          </div>
 
-            <Box>
-              <TextField
-                fullWidth
-                label="Your Display Name"
+          <div className="space-y-2">
+            <Label htmlFor="username">Your Username</Label>
+            <div className="relative">
+              <User className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                id="username"
                 type="text"
-                variant="outlined"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AssignmentIndIcon fontSize="small" />
-                    </InputAdornment>
-                  )
-                }}
+                placeholder="Your username"
+                value={currentUser?.username}
+                disabled
+                className="pl-8"
+              />
+            </div>
+          </div>
+
+          <div className='space-y-2'>
+            <Label htmlFor='role'>Your Role</Label>
+            <div className='relative'>
+              <UserRoundCog className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                id="role"
+                type="text"
+                value={t(`roles.${currentUser?.role}`)}
+                disabled
+                className="pl-8"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="displayName">Your Display Name</Label>
+            <div className="relative">
+              <UserRoundPen className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                id="displayName"
+                type="text"
+                placeholder="Your display name"
+                className="pl-8"
                 {...register('displayName', {
                   required: FIELD_REQUIRED_MESSAGE
                 })}
-                error={!!errors['displayName']}
               />
-              <FieldErrorAlert errors={errors} fieldName={'displayName'} />
-            </Box>
+            </div>
+            {errors.displayName && <FieldErrorAlert errors={errors} fieldName={'displayName'} />}
+          </div>
 
-            <Box>
-              <Button
-                className="interceptor-loading"
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth>
-                Update
-              </Button>
-            </Box>
-          </Box>
+          <Button type="submit" className="w-full" disabled={isUpdating}>
+            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : 
+              <>
+                <span>Update</span>
+              </>
+            }
+          </Button>
         </form>
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
 
 export default AccountTab
+

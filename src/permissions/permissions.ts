@@ -14,10 +14,12 @@ const defineAbilitiesFor = (role: 'admin' | 'manager' | 'client') => {
     case 'admin':
       return createMongoAbility<[Action, Category]>([
         { action: MANAGE, subject: ALL }, // Admin có toàn quyền
+        { action: [READ, CREATE, UPDATE, DELETE], subject: [BOARD, COLUMN, CARD, USER] },
       ]);
 
     case 'manager':
       return createMongoAbility<[Action, Category]>([
+        { action: MANAGE, subject: [BOARD, COLUMN, CARD] },
         { action: [READ, CREATE, UPDATE, DELETE], subject: [BOARD, COLUMN, CARD] },
         { action: READ, subject: USER }, // Manager chỉ có thể đọc thông tin người dùng
       ]);

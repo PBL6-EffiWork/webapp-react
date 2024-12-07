@@ -133,7 +133,7 @@ authorizedAxiosInstance.interceptors.response.use(
     }
     // Dùng toastify để hiển thị bất kể mọi mã lỗi lên màn hình - Ngoại trừ mã 410 - GONE phục vụ việc tự động refresh lại token.
     if (error.response?.status !== 410) {
-      toast.error(errorMessage);
+      toast.error('Something went wrong');
     }
 
     return Promise.reject(error);

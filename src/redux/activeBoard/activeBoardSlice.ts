@@ -7,6 +7,7 @@ import { generatePlaceholderCard } from '../../utils/formatters'
 import { Column } from '../../interfaces/column'
 import { moveCardToDifferentColumnAPI } from '../../apis'
 import { isIdPlaceholder } from '../../utils/validators'
+import { removeMemberFromBoardThunk } from '../board/boardSlice'
 
 // Define the structure of a Card, Column, and Board
 interface Card {
@@ -117,28 +118,52 @@ export const activeBoardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchBoardDetailsAPI.fulfilled, (state, action: PayloadAction<Board>) => {
-      const board = action.payload
+      const board = action.payload;
+      const placeholderCard = generatePlaceholderCard;
 
-      board.FE_allUsers = board.owners.concat(board.members)
-      board.columns = mapOrder(board.columns, board.columnOrderIds, '_id')
+      // Combine owners and members into single users array
+      board.FE_allUsers = board.owners.concat(board.members);
 
+      // Sort columns according to columnOrderIds
+      board.columns = mapOrder(board.columns, board.columnOrderIds, '_id');
+
+      // Process each column's cards
       board.columns.forEach(column => {
         if (isEmpty(column.cards)) {
-          column.cards = [generatePlaceholderCard(column) as any]
-          column.cardOrderIds = [generatePlaceholderCard(column)._id]
+          const placeholder = placeholderCard(column);
+          column.cards = [placeholder as any];
+          column.cardOrderIds = [placeholder._id];
         } else {
-          column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
+          column.cards = mapOrder(column.cards, column.cardOrderIds, '_id');
         }
-      })
+      });
 
-      state.currentActiveBoard = board
-      state.error = undefined
+      // Update state
+      state.currentActiveBoard = board;
+      state.error = undefined;
     }),
-    builder.addCase(fetchBoardDetailsAPI.rejected, (state, action) => {
-      // console.log('fetchBoardDetailsAPI rejected', action);
+
+    builder.addCase(fetchBoardDetailsAPI.rejected, (state) => {
       state.currentActiveBoard = null;
       state.error = 'Failed to fetch board details';
     }),
+
+    builder.addCase(removeMemberFromBoardThunk.fulfilled, (state, action) => {
+      const { boardId, memberId, response } = action.payload;
+      if (boardId === state.currentActiveBoard?._id) {
+        state.currentActiveBoard.members = state.currentActiveBoard.members.filter(member => member._id !== memberId);
+
+        // Remove member in card.memberIds in each column
+        state.currentActiveBoard.columns.forEach(column => {
+          column.cards.forEach(card => {
+            if (card.memberIds) {
+              card.memberIds = card.memberIds.filter(id => id !== memberId);
+            }
+          });
+        });
+      }
+    })
+
     builder.addCase('root/clearError', (state) => {
       state.error = undefined;
     })

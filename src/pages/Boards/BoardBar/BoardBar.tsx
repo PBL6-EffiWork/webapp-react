@@ -2,13 +2,12 @@ import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import VpnLockIcon from '@mui/icons-material/VpnLock'
-import AddToDriveIcon from '@mui/icons-material/AddToDrive'
-import BoltIcon from '@mui/icons-material/Bolt'
-import FilterListIcon from '@mui/icons-material/FilterList'
 import { Tooltip } from '@mui/material'
 import { capitalizeFirstLetter } from '../../../utils/formatters'
 import BoardUserGroup from './BoardUserGroup'
 import InviteBoardUser from './InviteBoardUser'
+import { useSelector } from 'react-redux'
+import { selectBoardMembersId } from '../../../redux/board/boardSlice'
 
 const MENU_STYLES = {
   color: 'white',
@@ -29,6 +28,7 @@ interface Board {
 }
 
 function BoardBar({ board }: { board: Board }) {
+  const members = useSelector(selectBoardMembersId(board._id))
   return (
     <Box sx={{
       width: '100%',
@@ -81,7 +81,7 @@ function BoardBar({ board }: { board: Board }) {
         <InviteBoardUser boardId={board._id} />
 
         {/* Xử lý hiển thị danh sách thành viên của board */}
-        <BoardUserGroup boardUsers={board?.FE_allUsers} limit={1} boardId={board._id} />
+        <BoardUserGroup boardUsers={members} limit={1} boardId={board._id} />
       </Box>
     </Box>
   )

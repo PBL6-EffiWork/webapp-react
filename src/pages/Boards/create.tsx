@@ -18,6 +18,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import { createNewBoardAPI } from '../../apis'
 
 import { styled } from '@mui/material/styles'
+import { useRole } from '../../context/RoleContext'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -35,34 +36,33 @@ const SidebarItem = styled(Box)(({ theme }) => ({
   }
 }))
 
-// BOARD_TYPES tương tự bên model phía Back-end (nếu cần dùng nhiều nơi thì hãy đưa ra file constants, không thì cứ để ở đây)
 const BOARD_TYPES = {
   PUBLIC: 'public',
   PRIVATE: 'private'
 }
 
-/**
- * Bản chất của cái component SidebarCreateBoardModal này chúng ta sẽ trả về một cái SidebarItem để hiển thị ở màn Board List cho phù hợp giao diện bên đó, đồng thời nó cũng chứa thêm một cái Modal để xử lý riêng form create board nhé.
- * Note: Modal là một low-component mà bọn MUI sử dụng bên trong những thứ như Dialog, Drawer, Menu, Popover. Ở đây dĩ nhiên chúng ta có thể sử dụng Dialog cũng không thành vấn đề gì, nhưng sẽ sử dụng Modal để dễ linh hoạt tùy biến giao diện từ con số 0 cho phù hợp với mọi nhu cầu nhé.
- */
 interface SidebarCreateBoardModalProps {
   afterCreateNewBoard: () => void;
 }
 
+interface FormData {
+  title: string;
+  description: string;
+  type: string;
+}
+
 function SidebarCreateBoardModal({ afterCreateNewBoard }: SidebarCreateBoardModalProps) {
-  interface FormData {
-    title: string;
-    description: string;
-    type: string;
-  }
+  const { ability } = useRole()
 
   const { control, register, handleSubmit, reset, formState: { errors } } = useForm<FormData>()
 
   const [isOpen, setIsOpen] = useState(false)
-  const handleOpenModal = () => setIsOpen(true)
+  const handleOpenModal = () => {
+    if (ability.cannot('manage', 'board')) return
+    setIsOpen(true)
+  }
   const handleCloseModal = () => {
     setIsOpen(false)
-    // Reset lại toàn bộ form khi đóng Modal
     reset()
   }
 
@@ -77,12 +77,17 @@ function SidebarCreateBoardModal({ afterCreateNewBoard }: SidebarCreateBoardModa
     })
   }
 
-  // <>...</> nhắc lại cho bạn nào chưa biết hoặc quên nhé: nó là React Fragment, dùng để bọc các phần tử lại mà không cần chỉ định DOM Node cụ thể nào cả.
   return (
     <>
-      <SidebarItem onClick={handleOpenModal}>
-        <LibraryAddIcon fontSize="small" />
-        Create a new board
+      <SidebarItem onClick={handleOpenModal} sx={{ width: '100%', padding: '0px' }}>
+        <Button 
+          variant='contained' 
+          startIcon={<LibraryAddIcon fontSize="small" />} 
+          fullWidth
+          disabled={ability.cannot('manage', 'board')}
+        >
+          Create a new board
+        </Button>
       </SidebarItem>
 
       <Modal

@@ -11,17 +11,15 @@ import { EMAIL_RULE, FIELD_REQUIRED_MESSAGE, EMAIL_RULE_MESSAGE } from '../../..
 import FieldErrorAlert from '../../../components/Form/FieldErrorAlert'
 import { inviteUserToBoardAPI } from '../../../apis'
 import { socketIoInstance } from '../../../socketClient'
+import { useRole } from '../../../context/RoleContext'
 
 interface InviteBoardUserProps {
   boardId: string
 }
 
 function InviteBoardUser({ boardId }: InviteBoardUserProps) {
-  /**
-   * Xử lý Popover để ẩn hoặc hiện một popup nhỏ, tương tự docs để tham khảo ở đây:
-   * https://mui.com/material-ui/react-popover/
-  */
   const [anchorPopoverElement, setAnchorPopoverElement] = useState<HTMLButtonElement | null>(null)
+  const { ability } = useRole()
   const isOpenPopover = Boolean(anchorPopoverElement)
   const popoverId = isOpenPopover ? 'invite-board-user-popover' : undefined
 
@@ -34,14 +32,10 @@ function InviteBoardUser({ boardId }: InviteBoardUserProps) {
   const submitInviteUserToBoard = (data: { inviteeEmail: string }) => {
     const { inviteeEmail } = data
 
-    // console.log('inviteeEmail:', inviteeEmail)
-    // Gọi API mời một người dùng nào đó vào làm thành viên của Board
     inviteUserToBoardAPI({ inviteeEmail, boardId }).then(invitation => {
-      // Clear thẻ input sử dụng react-hook-form bằng setValue, đồng thời đóng popover lại
       setValue('inviteeEmail', '')
       setAnchorPopoverElement(null)
 
-      // Mời một người dùng vào board xong thì cũng sẽ gửi/emit sự kiện socket lên server (tính năng real-time) > FE_USER_INVITED_TO_BOARD
       socketIoInstance.emit('FE_USER_INVITED_TO_BOARD', invitation)
     })
   }
@@ -55,12 +49,12 @@ function InviteBoardUser({ boardId }: InviteBoardUserProps) {
           variant="outlined"
           startIcon={<PersonAddIcon />}
           sx={{ color: 'white', borderColor: 'white', '&:hover': { borderColor: 'white' } }}
+          disabled={ability.cannot('manage', 'board')}
         >
           Invite
         </Button>
       </Tooltip>
 
-      {/* Khi Click vào butotn Invite ở trên thì sẽ mở popover */}
       <Popover
         id={popoverId}
         open={isOpenPopover}

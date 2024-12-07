@@ -23,6 +23,11 @@ export const getMembersOfBoardAPI = async (boardId: string) => {
   return response.data
 }
 
+export const removeMemberFromBoardAPI = async (boardId: string, memberId: string) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/boards/${boardId}/members/${memberId}`)
+  return response.data
+}
+
 export const moveCardToDifferentColumnAPI = async (updateData: { currentCardId: string; prevColumnId: string; prevCardOrderIds: string[]; nextColumnId: string; nextCardOrderIds: string[] }) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/boards/supports/moving_card`, updateData)
   return response.data
@@ -57,6 +62,11 @@ export const getCardStatusAPI = async (cardId: string, boardId: string) => {
 
 export const getCardStatusOfBoardAPI = async (boardId: string) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/${boardId}/cards/status`)
+  return response.data
+}
+
+export const getUpcomingTaskAPI = async (memberId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/upcoming/${memberId}`)
   return response.data
 }
 

@@ -88,7 +88,7 @@ function App() {
                   {/* Board Routes */}
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
-                  <Route path='/admin' element={<Admin />} />
+                  {currentUser?.role === 'admin' && <Route path='/admin' element={<Admin />} />}
                   {/* Calendar Routes */}
                   <Route path='/calendar' element={<MyCalendar />} />
 

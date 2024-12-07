@@ -7,10 +7,6 @@ import MenuItem from '@mui/material/MenuItem'
 import Divider from '@mui/material/Divider'
 import ListItemText from '@mui/material/ListItemText'
 import ListItemIcon from '@mui/material/ListItemIcon'
-import ContentCut from '@mui/icons-material/ContentCut'
-import ContentCopy from '@mui/icons-material/ContentCopy'
-import ContentPaste from '@mui/icons-material/ContentPaste'
-import Cloud from '@mui/icons-material/Cloud'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Tooltip from '@mui/material/Tooltip'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
@@ -34,6 +30,9 @@ import { useAppDispatch } from '../../../hooks/useAppDispatch'
 import React from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { loadCardStatusThunk } from '../../../redux/board/boardSlice'
+import { useAbility } from '@casl/react'
+import { useRole } from '../../../context/RoleContext'
+import { LockIcon } from 'lucide-react'
 
 interface ColumnProps {
   column: {
@@ -48,18 +47,15 @@ function Column({ column }: ColumnProps) {
   const [searchParams] = useSearchParams()
 
   const cardId = searchParams.get('cardId')
+  const { ability } = useRole()
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column._id,
     data: { ...column }
   })
   const dndKitColumnStyles = {
-    // touchAction: 'none', // Dành cho sensor default dạng PointerSensor
-    // Nếu sử dụng CSS.Transform như docs sẽ lỗi kiểu stretch
-    // https://github.com/clauderic/dnd-kit/issues/117
     transform: CSS.Translate.toString(transform),
     transition,
-    // Chiều cao phải luôn max 100% vì nếu không sẽ lỗi lúc kéo column ngắn qua một cái column dài thì phải kéo ở khu vực giữa giữa rất khó chịu (demo ở video 32). Lưu ý lúc này phải kết hợp với {...listeners} nằm ở Box chứ không phải ở div ngoài cùng để tránh trường hợp kéo vào vùng xanh.
     height: '100%',
     opacity: isDragging ? 0.5 : undefined
   }
@@ -69,7 +65,6 @@ function Column({ column }: ColumnProps) {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
-  // Cards đã được sắp xếp ở component cha cao nhất (boards/_id.jsx) (Video 71 đã giải thích lý do)
   const orderedCards = column.cards
 
   const [openNewCardForm, setOpenNewCardForm] = useState(false)
@@ -131,21 +126,17 @@ function Column({ column }: ColumnProps) {
   const handleDeleteColumn = () => {
     confirmDeleteColumn({
       title: 'Delete Column?',
-      description: 'This action will permanently delete your Column and its Cards! Are you sure?',
       confirmationText: 'Confirm',
-      cancellationText: 'Cancel'
-      // buttonOrder: ['confirm', 'cancel']
-      // content: 'test content hehe',
-      // allowClose: false,
-      // dialogProps: { maxWidth: 'lg' },
-      // cancellationButtonProps: { color: 'primary' },
-      // confirmationButtonProps: { color: 'success', variant: 'outlined' },
-      // description: 'Phải nhập chữ Effiwork thì mới được Confirm =))',
-      // confirmationKeyword: 'Effiwork'
+      cancellationText: 'Cancel',
+      buttonOrder: ['confirm', 'cancel'],
+      content: `Please type "${column.title}" to confirm`,
+      allowClose: false,
+      dialogProps: { maxWidth: 'md' },
+      cancellationButtonProps: { color: 'primary' },
+      confirmationButtonProps: { color: 'success', variant: 'outlined' },
+      confirmationKeyword: column.title
     }).then(() => {
-      // Update cho chuẩn dữ liệu state Board
 
-      // Tương tự đoạn xử lý chỗ hàm moveColumns nên không ảnh hưởng Redux Toolkit Immutability gì ở đây cả.
       const newBoard = { ...board }
       if (newBoard?.columns) {
         newBoard.columns = newBoard.columns.filter((c) => c._id !== column._id)
@@ -156,7 +147,6 @@ function Column({ column }: ColumnProps) {
       // setBoard(newBoard)
       dispatch(updateCurrentActiveBoard(newBoard as any))
 
-      // Gọi API xử lý phía BE
       deleteColumnDetailsAPI(column._id).then(res => {
         toast.success(res?.deleteResult)
       })
@@ -164,7 +154,6 @@ function Column({ column }: ColumnProps) {
   }
 
   const onUpdateColumnTitle = (newTitle: string) => {
-    // Gọi API update Column và xử lý dữ liệu board trong redux
     updateColumnDetailsAPI(column._id, { title: newTitle }).then(() => {
       const newBoard = cloneDeep(board)
       const columnToUpdate = newBoard?.columns?.find((c: typeof column) => c._id === column._id)
@@ -174,7 +163,6 @@ function Column({ column }: ColumnProps) {
     })
   }
 
-  // Phải bọc div ở đây vì vấn đề chiều cao của column khi kéo thả sẽ có bug kiểu kiểu flickering (video 32)
   return (
     <div ref={setNodeRef} style={dndKitColumnStyles} {...attributes}>
       <Box
@@ -236,34 +224,24 @@ function Column({ column }: ColumnProps) {
                 <ListItemIcon><AddCardIcon className="add-card-icon" fontSize="small" /></ListItemIcon>
                 <ListItemText>Add new card</ListItemText>
               </MenuItem>
-              <MenuItem>
-                <ListItemIcon><ContentCut fontSize="small" /></ListItemIcon>
-                <ListItemText>Cut</ListItemText>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon><ContentCopy fontSize="small" /></ListItemIcon>
-                <ListItemText>Copy</ListItemText>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon><ContentPaste fontSize="small" /></ListItemIcon>
-                <ListItemText>Paste</ListItemText>
-              </MenuItem>
               <Divider />
               <MenuItem
                 onClick={handleDeleteColumn}
+                disabled={ability.cannot('delete', 'column')}
                 sx={{
                   '&:hover': {
                     color: 'warning.dark',
                     '& .delete-forever-icon': { color: 'warning.dark' }
-                  }
+                  },
                 }}
               >
-                <ListItemIcon><DeleteForeverIcon className="delete-forever-icon" fontSize="small" /></ListItemIcon>
+                <ListItemIcon>
+                  <DeleteForeverIcon className="delete-forever-icon" fontSize="small" />
+                </ListItemIcon>
                 <ListItemText>Delete this column</ListItemText>
-              </MenuItem>
-              <MenuItem>
-                <ListItemIcon><Cloud fontSize="small" /></ListItemIcon>
-                <ListItemText>Archive this column</ListItemText>
+                {ability.cannot('delete', 'column') && (
+                  <LockIcon className="h-4 w-4 ml-2" />
+                )}
               </MenuItem>
             </Menu>
           </Box>
