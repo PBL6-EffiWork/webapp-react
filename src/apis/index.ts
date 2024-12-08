@@ -109,6 +109,11 @@ export const refreshTokenAPI = async (refreshToken: string) => {
   return response.data
 }
 
+export const sendReminderAPI = async (memberId: string, boardId: string) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/users/${memberId}/tasks/near-due`, { boardId })
+  return response.data
+}
+
 /** Boards */
 export const fetchBoardsAPI = async (searchPath: string) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards${searchPath}`)

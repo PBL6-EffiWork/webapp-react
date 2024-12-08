@@ -24,8 +24,10 @@ function SelectColumn({ cardId, currentColumnId, isShow }: SelectColumnProps) {
 
   const currentColumn = columns?.find((column: Column) => column._id === currentColumnId)
   return (
-    <div className={`z-[99999] ${isShow ? 'opacity-100' : 'opacity-0'}`}>
-      <Select defaultValue={currentColumnId} onValueChange={onChange}>
+    <div 
+      className={`z-[99999] ${isShow ? 'opacity-100' : 'opacity-0'}`} 
+    >
+      <Select defaultValue={currentColumnId} onValueChange={onChange} disabled={!isShow}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={currentColumn?.title || 'Select a column'} />
         </SelectTrigger>

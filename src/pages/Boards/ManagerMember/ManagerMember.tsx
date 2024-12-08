@@ -42,6 +42,8 @@ import { useTranslation } from "react-i18next"
 import { Checkbox } from "@/components/ui/checkbox"
 import React from "react"
 import { selectCurrentUser } from "../../../redux/user/userSlice"
+import { sendReminderAPI } from "../../../apis"
+import { toast } from "react-toastify"
 
 interface Member extends User {
   upcomingTask?: string;
@@ -79,10 +81,10 @@ export default function ManagerMembersTable({ boardId }: ManagerMembersTableProp
   const [selectedMembers, setSelectedMembers] = useState<string[]>([])
   const upcomingTasks = useSelector(selectMembersUpcomingTask(boardId))
 
-  console.log(upcomingTasks)
 
-  const sendReminder = (member: Member) => {
-    console.log("Sending reminder to", member.displayName)
+  const sendReminder = async (member: Member) => {
+    await sendReminderAPI(member._id, boardId)
+    toast.success('Reminder sent successfully!', { theme: 'colored' })
   }
 
   const removeFromBoard = (member: Member) => {
@@ -165,12 +167,19 @@ export default function ManagerMembersTable({ boardId }: ManagerMembersTableProp
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => sendReminder(info.row.original)}>
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => sendReminder(info.row.original)}
+                  disabled={!upcomingTasks.filter(Boolean).find((task) => task.memberIds.includes(info.row.original._id))}
+                >
                   <Bell className="mr-2 h-4 w-4" />
                   Send Reminder
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="bg-destructive text-destructive-foreground focus:bg-danger focus:text-danger-foreground" onClick={() => removeFromBoard(info.row.original)}>
+                <DropdownMenuItem 
+                  className="bg-destructive text-destructive-foreground focus:bg-danger focus:text-danger-foreground cursor-pointer" 
+                  onClick={() => removeFromBoard(info.row.original)}
+                >
                   <UserMinus className="mr-2 h-4 w-4" />
                   Remove from Board
                 </DropdownMenuItem>

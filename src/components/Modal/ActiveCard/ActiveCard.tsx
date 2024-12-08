@@ -250,11 +250,11 @@ function ActiveCard() {
                     }
                   }}
                 />
-                {activeCard?.columnId ? 'Done' : 'Not Done'}
+                {status?.[activeCard?.columnId ?? ''] ? 'Done' : 'Not Done'}
                 <SelectColumn 
                   cardId={activeCard?._id} 
                   currentColumnId={activeCard?.columnId}
-                  isShow={activeCard?.columnId ? status[activeCard.columnId] : false}
+                  isShow={activeCard?.columnId ? status[activeCard?.columnId ?? ''] : false}
                 />
               </div>
             </Box>
