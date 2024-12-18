@@ -20,6 +20,7 @@ import Admin from './pages/Admin'
 import MyCalendar from './pages/Calendar/Calendar';
 import { Can, RoleProvider } from './context/RoleContext'
 import { useTranslation } from 'react-i18next'
+import AdminUsers from './pages/Admin/User'
 
 // Styled components for layout
 const MainLayout = styled('div')({
@@ -88,7 +89,7 @@ function App() {
                   {/* Board Routes */}
                   <Route path='/boards/:boardId' element={<Board />} />
                   <Route path='/boards' element={<Boards />} />
-                  {currentUser?.role === 'admin' && <Route path='/admin' element={<Admin />} />}
+                  
                   {/* Calendar Routes */}
                   <Route path='/calendar' element={<MyCalendar />} />
 
@@ -98,6 +99,10 @@ function App() {
 
                   {/* Dashboard Routes */}
                   <Route path='/dashboard' element={<Dashboard id={currentUser?._id} />} />
+                  {/* Admin Routes */}
+                  {currentUser?.role === 'admin' && <Route path='/admin' element={<Admin />} />}
+
+                  {currentUser?.role === 'admin' && <Route path='/admin/users' element={<AdminUsers />} />}
                 </Route>
 
               {/* Authentication Routes */}

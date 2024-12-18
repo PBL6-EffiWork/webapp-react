@@ -4,7 +4,8 @@
     "board": "Board",
     "card": "Card",
     "calendar": "Calendar",
-    "admin": "Admin",
+    "dashboard": "Dashboard",
+    "users": "Users",
     "inbox": "Inbox",
     "roles": {
       "client": "Member",

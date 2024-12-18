@@ -88,6 +88,17 @@ export const loadHistoryCardAPI = async (cardId: string) => {
 }
 
 /** Users */
+
+export const getUsersAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users`)
+  return response.data
+}
+
+export const changeStatusUserAPI = async (userId: string, isActive: boolean) => {
+  const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/users/${userId}`, {isActive})
+  return response.data
+}
+
 export const registerUserAPI = async (data: { email: any; password: any }) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/users/register`, data)
   toast.success('Account created successfully! Please check and verify your account before logging in!', { theme: 'colored' })
@@ -115,6 +126,12 @@ export const sendReminderAPI = async (memberId: string, boardId: string) => {
 }
 
 /** Boards */
+
+export const getBoardsAPIAdmin = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/admin`)
+  return response.data
+}
+
 export const fetchBoardsAPI = async (searchPath: string) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards${searchPath}`)
   return response.data

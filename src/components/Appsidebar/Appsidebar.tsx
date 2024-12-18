@@ -49,9 +49,15 @@ const items = [
     icon: Calendar,
   },
   {
-    title: "admin",
+    title: "dashboard",
     url: "/admin",
     icon: CircuitBoard,
+    role: "admin",
+  },
+  {
+    title: "users",
+    url: "/admin/users",
+    icon: User2,
     role: "admin",
   }
 ]

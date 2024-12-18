@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { User } from "../../interfaces/user";
-import { getCardStatusAPI, getCardStatusOfBoardAPI, getMembersOfBoardAPI, getUpcomingTaskAPI, removeMemberFromBoardAPI } from "../../apis";
+import { changeStatusUserAPI, getBoardsAPIAdmin, getCardStatusAPI, getCardStatusOfBoardAPI, getMembersOfBoardAPI, getUpcomingTaskAPI, getUsersAPI, removeMemberFromBoardAPI } from "../../apis";
 import { CardStatus } from "../../interfaces/task";
 import { get } from "lodash";
 import { Card } from "../../interfaces/card";
@@ -17,13 +17,17 @@ interface BoardState {
   },
   upcomingTask: {
     [key: string]: Card
-  }
+  },
+  boards: any[],
+  allMembers: User[]
 }
 
 const initialState: BoardState = {
   members: {},
   cardStatus: {},
-  upcomingTask: {}
+  upcomingTask: {},
+  boards: [],
+  allMembers: []
 }
 
 export const loadMembersBoardThunk = createAsyncThunk(
@@ -63,6 +67,39 @@ export const removeMemberFromBoardThunk = createAsyncThunk(
   async ({boardId, memberId}: {boardId: string, memberId: string}) => {
     const response = await removeMemberFromBoardAPI(boardId, memberId)
     return {boardId, memberId, response}
+  }
+)
+
+export const deactivateUserThunk = createAsyncThunk(
+  'board/deactivateUser',
+  async (userId: string) => {
+    const response = await changeStatusUserAPI(userId, false)
+    return {userId, response}
+  }
+)
+
+export const activateUserThunk = createAsyncThunk(
+  'board/activateUser',
+  async (userId: string) => {
+    const response = await changeStatusUserAPI(userId, true)
+    return {userId, response}
+  }
+)
+
+export const loadBoardsAdminThunk = createAsyncThunk(
+  'board/loadBoardsAdmin',
+  async () => {
+    const response = await getBoardsAPIAdmin()
+    return {boards: response}
+  }
+)
+
+export const loadAllMembersThunk = createAsyncThunk(
+  'board/loadAllMembers',
+  async () => {
+    const response = await getUsersAPI()
+    console.log(response)
+    return {members: response}
   }
 )
 
@@ -118,6 +155,38 @@ export const boardSlice = createSlice({
       toast.error('Failed to remove member from board')
     })
     .addCase(removeMemberFromBoardThunk.pending, () => {})
+    .addCase(loadBoardsAdminThunk.fulfilled, (state, action) => {
+      const { boards } = action.payload;
+      state.boards = boards;
+    })
+    .addCase(loadBoardsAdminThunk.rejected, () => {
+      toast.error('Failed to load boards')
+    })
+    .addCase(loadBoardsAdminThunk.pending, () => {})
+    .addCase(loadAllMembersThunk.fulfilled, (state, action) => {
+      const { members } = action.payload;
+      state.allMembers = members;
+    })
+    .addCase(loadAllMembersThunk.rejected, () => {
+      toast.error('Failed to load all members')
+    })
+    .addCase(loadAllMembersThunk.pending, () => {})
+    .addCase(deactivateUserThunk.fulfilled, (state, action) => {
+      const { userId, response } = action.payload;
+      state.allMembers = [...state.allMembers.map((member) => member._id === userId ? {...member, isActive: response.isActive} : member)];
+    })
+    .addCase(deactivateUserThunk.rejected, () => {
+      toast.error('Failed to deactivate user')
+    })
+    .addCase(deactivateUserThunk.pending, () => {})
+    .addCase(activateUserThunk.fulfilled, (state, action) => {
+      const { userId, response } = action.payload;
+      state.allMembers = [...state.allMembers.map((member) => member._id === userId ? {...member, isActive: response.isActive} : member)];
+    })
+    .addCase(activateUserThunk.rejected, () => {
+      toast.error('Failed to activate user')
+    })
+    .addCase(activateUserThunk.pending, () => {})
   }
 })
 
@@ -135,6 +204,11 @@ export const selectBoardMembersId = (boardId: string) => createSelector(
   }
 )
 
+export const selectAllMembersBoard = (state: { board: BoardState }) => {
+  // Get array of all members
+  return state.board.allMembers
+}
+
 export const selectCardStatus = (cardId: string) => createSelector(
   selectBoardCardStatus,
   (cardStatus) => cardStatus[cardId]
@@ -147,3 +221,7 @@ export const selectMembersUpcomingTask = (boardId: string) => createSelector(
   selectBoardMembersId(boardId),
   (upcomingTask, members) => members.map((member) => upcomingTask[member._id])
 )
+
+export const selectMembersUpcomingTaskAll = (state: { board: BoardState }) => {
+  return Object.values(state.board.upcomingTask).flat()
+}

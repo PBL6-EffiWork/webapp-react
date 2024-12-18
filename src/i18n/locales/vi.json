@@ -4,7 +4,8 @@
     "board": "Bảng",
     "card": "Thẻ",
     "calendar": "Lịch",
-    "admin": "Quản trị",
+    "dashboard": "Bảng điều khiển",
+    "users": "Thành viên",
     "inbox": "Hộp thư",
     "roles": {
       "client": "Thành viên",
