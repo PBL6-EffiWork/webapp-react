@@ -44,6 +44,7 @@ import React from "react"
 import { selectCurrentUser } from "../../../redux/user/userSlice"
 import { sendReminderAPI } from "../../../apis"
 import { toast } from "react-toastify"
+import { useNavigate } from "react-router-dom"
 
 interface Member extends User {
   upcomingTask?: string;
@@ -79,6 +80,7 @@ export default function ManagerMembersTable({ boardId }: ManagerMembersTableProp
   const members = useSelector(selectAllMembersBoard)
   const currentUser = useSelector(selectCurrentUser)
   const [selectedMembers, setSelectedMembers] = useState<string[]>([])
+  const navigate = useNavigate()
 
 
   const deactivateUser = (member: Member) => {
@@ -151,6 +153,7 @@ export default function ManagerMembersTable({ boardId }: ManagerMembersTableProp
                 <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
                 <DropdownMenuItem 
                   className="cursor-pointer"
+                  onClick={() => navigate(`/users/${info.row.original._id}`)}
                 >
                   <Bell className="mr-2 h-4 w-4" />
                   View Profile

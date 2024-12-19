@@ -21,6 +21,7 @@ import MyCalendar from './pages/Calendar/Calendar';
 import { Can, RoleProvider } from './context/RoleContext'
 import { useTranslation } from 'react-i18next'
 import AdminUsers from './pages/Admin/User'
+import UserDetailPage from './pages/Users'
 
 // Styled components for layout
 const MainLayout = styled('div')({
@@ -103,6 +104,7 @@ function App() {
                   {currentUser?.role === 'admin' && <Route path='/admin' element={<Admin />} />}
 
                   {currentUser?.role === 'admin' && <Route path='/admin/users' element={<AdminUsers />} />}
+                  <Route path='/users/:userId' element={<UserDetailPage />} />
                 </Route>
 
               {/* Authentication Routes */}

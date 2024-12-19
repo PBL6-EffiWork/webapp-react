@@ -94,6 +94,11 @@ export const getUsersAPI = async () => {
   return response.data
 }
 
+export const getDetailUserAPI = async (userId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/${userId}`)
+  return response.data
+}
+
 export const changeStatusUserAPI = async (userId: string, isActive: boolean) => {
   const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/users/${userId}`, {isActive})
   return response.data

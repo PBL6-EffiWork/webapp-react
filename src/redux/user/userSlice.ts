@@ -3,6 +3,8 @@ import authorizedAxiosInstance from '../../utils/authorizeAxios'
 import { API_ROOT } from '../../utils/constants'
 import { toast } from 'react-toastify'
 import { LocalStorageHelper } from '../../helpers/storage'
+import { getDetailUserAPI } from '../../apis'
+import { build } from 'vite'
 
 // Define types for the initial state and user
 interface User {
@@ -16,7 +18,9 @@ interface UserState {
 
 // Initial state
 const initialState: UserState = {
-  currentUser: null
+  currentUser: null,
+  error: null,
+  userDetailView: null
 }
 
 // Thunk action types
@@ -59,6 +63,22 @@ export const updateUserAPI = createAsyncThunk(
   }
 )
 
+export const getDetailsUserThunk = createAsyncThunk(
+  'user/getDetailsUserAPI',
+  async (userId: string) => {
+    const response = await getDetailUserAPI(userId)
+    return response as User
+  }
+)
+
+export const updateUserThunk = createAsyncThunk(
+  'user/updateUserThunk',
+  async ({userId, data}:{userId: string, data: UpdateData}) => {
+    const response = await authorizedAxiosInstance.put(`${API_ROOT}/v1/users/${userId}`, data)
+    return response.data as User
+  }
+)
+
 // User slice
 export const userSlice = createSlice({
   name: 'user',
@@ -79,10 +99,32 @@ export const userSlice = createSlice({
     builder.addCase(updateUserAPI.fulfilled, (state, action: PayloadAction<User>) => {
       state.currentUser = action.payload
     })
+    builder.addCase(getDetailsUserThunk.fulfilled, (state, action: PayloadAction<User>) => {
+      console.log('User details:', action.payload);
+      state.userDetailView = action.payload
+      state.error = null
+    })
+    builder.addCase(getDetailsUserThunk.rejected, (state) => {
+      console.log('Failed to get user details');
+      state.error = 'Failed to get user details'
+    })
+    builder.addCase(getDetailsUserThunk.pending, (state) => {
+      state.error = null
+      // toast.info('Loading user details...')
+    })
+    builder.addCase(updateUserThunk.fulfilled, (state, action: PayloadAction<User>) => {
+      state.userDetailView = action.payload
+    })
+    builder.addCase(updateUserThunk.rejected, (state) => {
+      toast.error('Failed to update user')
+    })
   }
 })
 
 // Selector
 export const selectCurrentUser = (state: { user: UserState }) => state.user.currentUser
+
+export const selectUserDetailView = (state: { user: UserState }) => state.user.userDetailView
+export const selectUserError = (state: { user: UserState }) => state.user.error
 
 export const userReducer = userSlice.reducer
