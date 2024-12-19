@@ -18,6 +18,8 @@ import { fetchBoardsAPI } from '../../apis'
 import { DEFAULT_PAGE, DEFAULT_ITEMS_PER_PAGE } from '../../utils/constants'
 import { Card as CardUI, CardContent as CardContentUI } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react'
+import SvgIcon from '@mui/icons-material/ArrowRight'
+import { DashboardIcon } from '@radix-ui/react-icons'
 
 // Interface definitions
 interface BoardResponse {
@@ -123,17 +125,24 @@ function Boards() {
 
           {/* Boards Grid */}
           {boards.length === 0 ? (
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                textAlign: 'center',
-                color: 'text.secondary',
-                py: 4 
-              }}
-            >
+            <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              py: 4,
+            }}
+          >
+            <DashboardIcon />
+            <Typography variant="h6" color="text.secondary">
               No boards found. Create your first board!
             </Typography>
-          ) : (
+          </Box>
+          ) 
+          : 
+          (
             <Grid 
               container 
               spacing={{ xs: 2, sm: 3 }}

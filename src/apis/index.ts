@@ -87,6 +87,11 @@ export const loadHistoryCardAPI = async (cardId: string) => {
   return response.data
 }
 
+export const loadHistoryAPI = async (userId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/history/user/${userId}`)
+  return response.data
+}
+
 /** Users */
 
 export const getUsersAPI = async () => {

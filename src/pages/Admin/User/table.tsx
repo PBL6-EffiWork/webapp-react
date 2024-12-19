@@ -141,7 +141,7 @@ export default function ManagerMembersTable({ boardId }: ManagerMembersTableProp
       columnHelper.display({
         id: "actions",
         cell: (info) => {
-          return currentUser?._id === info.row.original._id ? null : (
+          return  (
               <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">

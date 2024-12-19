@@ -24,13 +24,13 @@ function Dashboard({id}: {id: string}) {
       const fetchData = async () => {
           try {
               const [
-                  userData,
+                  // userData,
                   projectData, 
                   cardData,
                   topCardData,
                   eventData
               ] = await Promise.all([
-                  countUser(),
+                  // countUser(),
                   countBoard(id),
                   countCard('year', id),
                   top5Cards(id),
@@ -38,7 +38,7 @@ function Dashboard({id}: {id: string}) {
               ]);
 
               setStats({
-                  users: userData.total,
+                  users: 0,
                   projects: projectData.total,
                   cards: cardData.total,
                   topCards: topCardData,
