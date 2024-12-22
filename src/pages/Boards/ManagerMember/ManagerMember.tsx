@@ -88,6 +88,12 @@ export default function ManagerMembersTable({ boardId }: ManagerMembersTableProp
   }
 
   const removeFromBoard = (member: Member) => {
+    if (members.length <= 1) {
+      return toast.error('Cannot remove the last member from the board!', { theme: 'colored' })
+    }
+
+    if (!window.confirm(`Are you sure you want to remove ${member.displayName} from the board?`))   return
+
     dispatch(removeMemberFromBoardThunk({boardId, memberId: member._id})) 
   }
 

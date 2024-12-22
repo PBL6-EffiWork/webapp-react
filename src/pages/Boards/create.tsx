@@ -15,10 +15,11 @@ import Button from '@mui/material/Button'
 import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import { createNewBoardAPI } from '../../apis'
+import { createNewBoardAPI, createSampleBoardAPI } from '../../apis'
 
 import { styled } from '@mui/material/styles'
 import { useRole } from '../../context/RoleContext'
+import { useNavigate } from 'react-router-dom'
 const SidebarItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -55,6 +56,7 @@ function SidebarCreateBoardModal({ afterCreateNewBoard }: SidebarCreateBoardModa
   const { ability } = useRole()
 
   const { control, register, handleSubmit, reset, formState: { errors } } = useForm<FormData>()
+  const navigate = useNavigate()
 
   const [isOpen, setIsOpen] = useState(false)
   const handleOpenModal = () => {
@@ -64,6 +66,13 @@ function SidebarCreateBoardModal({ afterCreateNewBoard }: SidebarCreateBoardModa
   const handleCloseModal = () => {
     setIsOpen(false)
     reset()
+  }
+
+  const createSample = () => {
+    createSampleBoardAPI().then(() => {
+      afterCreateNewBoard?.()
+    }).catch((error) => {
+    })
   }
 
 
@@ -207,7 +216,14 @@ function SidebarCreateBoardModal({ afterCreateNewBoard }: SidebarCreateBoardModa
                   )}
                 />
 
-                <Box sx={{ alignSelf: 'flex-end' }}>
+                <Box sx={{ alignSelf: 'flex-end', gap: 2, display: 'flex' }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={createSample}
+                  >
+                    Create Sample Board
+                  </Button>
                   <Button
                     className="interceptor-loading"
                     type="submit"
