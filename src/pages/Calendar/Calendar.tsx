@@ -107,7 +107,7 @@ const MyCalendar: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/users/list`);
+                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/users/active`);
                 setUsers(response.data);
                 setFilteredUsers(response.data); // Initialize filteredUsers
             } catch (error) {
