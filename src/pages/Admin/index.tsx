@@ -1,15 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, PieChart, Pie, Legend } from 'recharts'
-import { Users } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+} from "recharts";
+import { Users } from "lucide-react";
+import { analyticsBoardAPI, analyticsColumnsAPI, analyticsMemberAPI } from "../../apis";
 
 // Sample data - replace with your actual data fetching logic
-const totalProjects = 12
-const totalCards = 89
-const totalEvents = 24
+// const totalProjects = 12;
+// const totalCards = 89;
+// const totalEvents = 24;
 
 const taskData = [
   { name: "Complete project proposal", daysLeft: 5, completion: 75 },
@@ -17,25 +35,75 @@ const taskData = [
   { name: "Update website content", daysLeft: 4, completion: 60 },
   { name: "Prepare presentation slides", daysLeft: 6, completion: 40 },
   { name: "Submit expense report", daysLeft: 1, completion: 95 },
-]
+];
 
-const projectData = [
-  { name: "In Process", value: 30 },
-  { name: "Experired", value: 29 },
-  { name: "Finished", value: 41 }
-]
+// const projectData = [
+//   { name: "In Process", value: 30 },
+//   { name: "Experired", value: 29 },
+//   { name: "Finished", value: 41 },
+// ];
 
-const timeFrames = {
-  all: { label: "All", value: 89 },
-  today: { label: "Manager", value: 12 },
-  week: { label: "Member", value: 45 }
-}
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function DashboardPage() {
-  const [chartData, setChartData] = useState(projectData)
-    const [timeFrame, setTimeFrame] = useState<keyof typeof timeFrames>('all')
+  const [chartData, setChartData] = useState([]);
+  const [timeFrames, setTimeFrames] = useState({
+    all: { label: "All", value: 0 },
+    manager: { label: "Manager", value: 0 },
+    client: { label: "Member", value: 0 },
+  });
+  const [timeFrame, setTimeFrame] = useState<keyof typeof timeFrames>("all");
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [projects, setProjects] = useState<{
+    id: string;
+    title: string;
+  }[]>([]);
+
+  const getProgressProject = async (id: string) => {
+    try {
+      const res = await analyticsColumnsAPI(id);
+
+      const { data } = res;
+      const charData = data.map(({ title, totalCards }: {
+        title: string;
+        totalCards: number;
+      }) => ({ name: title, value: totalCards }));
+
+      console.log(charData);
+
+      setChartData(charData);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    // Fetch data
+    const fetchData = async () => {
+      const res = await analyticsBoardAPI();
+
+      const { total, boards } = res;
+
+      setTotalProjects(total);
+      setProjects(boards);
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async (role: keyof typeof timeFrames) => {
+
+      const res = await analyticsMemberAPI(role);
+      
+      const { total } = res;
+      
+      setTimeFrames((prev) => ({ ...prev, [role]: { ...prev[role], value: total } }));
+    };
+
+    fetchData(timeFrame);
+  }, [timeFrame]);
+  
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
       <main className="container mx-auto">
@@ -60,28 +128,33 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold">{totalProjects}</div>
             </CardContent>
           </Card>
-           <Card>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">User</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">User</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold">{timeFrames[timeFrame].value}</div>
-                <Select value={timeFrame} onValueChange={(value: keyof typeof timeFrames) => setTimeFrame(value)}>
-                    <SelectTrigger className="w-[120px]">
+                <Select
+                  value={timeFrame}
+                  onValueChange={(value: keyof typeof timeFrames) => setTimeFrame(value)}
+                >
+                  <SelectTrigger className="w-[120px]">
                     <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
+                  </SelectTrigger>
+                  <SelectContent>
                     {Object.entries(timeFrames).map(([key, { label }]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
                     ))}
-                    </SelectContent>
+                  </SelectContent>
                 </Select>
-                </div>
+              </div>
             </CardContent>
-            </Card>
-          <Card>
+          </Card>
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Inbox</CardTitle>
               <svg
@@ -120,65 +193,80 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">1234</div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <Card className="grid gap-6 md:grid-cols">
+          {/* <Card className="grid gap-6 md:grid-cols">
             <CardHeader>
-              <CardTitle className="font-bold text-gray-800 dark:text-white">The 5 highest progress projects</CardTitle>
-              <CardDescription className="text-sm text-gray-600 dark:text-gray-400">Evaluated according to completion rate</CardDescription>
+              <CardTitle className="font-bold text-gray-800 dark:text-white">
+                The 5 highest progress projects
+              </CardTitle>
+              <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                Evaluated according to completion rate
+              </CardDescription>
             </CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={taskData}>
-                    <XAxis 
-                        dataKey="name" 
-                        angle={-45} 
-                        textAnchor="end" 
-                        height={70}
-                        tick={{ fill: 'hsl(var(--foreground))' }}
-                    />
-                    <YAxis 
-                        tick={{ fill: 'hsl(var(--foreground))' }}
-                    />
-                    <Tooltip 
-                        contentStyle={{ 
-                        backgroundColor: 'hsl(var(--background))', 
-                        border: '1px solid hsl(var(--border))' 
-                        }}
-                    />
-                    <Bar 
-                        dataKey="completion" 
-                        fill="hsl(var(--primary))" 
-                        name="Completion %"
-                        radius={[4, 4, 0, 0]}
-                    >
-                        {taskData.map((entry, index) => (
-                        <Cell 
-                            key={`cell-${index}`} 
-                            fill={`hsl(var(--primary) / ${0.5 + (entry.completion / 200)})`} 
-                        />
-                        ))}
-                    </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-                </CardContent>
-          </Card>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={taskData}>
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{ fill: "hsl(var(--foreground))" }}
+                  />
+                  <YAxis tick={{ fill: "hsl(var(--foreground))" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                    }}
+                  />
+                  <Bar
+                    dataKey="completion"
+                    fill="hsl(var(--primary))"
+                    name="Completion %"
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {taskData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={`hsl(var(--primary) / ${0.5 + entry.completion / 200})`}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card> */}
 
           <Card className="grid gap-6 md:grid-cols">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="font-bold text-gray-800 dark:text-white">The number of tasks</CardTitle>
-                <CardDescription className="text-sm text-gray-600 dark:text-gray-400">Compare based on 3 criteria</CardDescription>
+                <CardTitle className="font-bold text-gray-800 dark:text-white">
+                  The number of tasks
+                </CardTitle>
+                <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+                  Compare based on 3 criteria
+                </CardDescription>
               </div>
-              <Select onValueChange={(value) => setChartData(value === 'projects' ? projectData : taskData)}>
+              <Select
+                onValueChange={(value) =>
+                  getProgressProject(value)
+                }
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a project" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="projects">Projects</SelectItem>
-                  <SelectItem value="tasks">Tasks</SelectItem>
+                  {
+                    projects.map(({ id, title }) => (
+                      <SelectItem key={id} value={id}>
+                        {title}
+                      </SelectItem>
+                    ))
+                  }
                 </SelectContent>
               </Select>
             </CardHeader>
@@ -208,6 +296,5 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
-

@@ -33,6 +33,29 @@ export const moveCardToDifferentColumnAPI = async (updateData: { currentCardId: 
   return response.data
 }
 
+export const analyticsBoardAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/analytics`)
+  return response.data
+}
+
+export const analyticsMemberAPI = async (role: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/analytics`, {
+    params: {
+      role: role === 'all' ? undefined : role
+    }
+  })
+  return response.data
+}
+
+export const analyticsColumnsAPI = async (boardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/columns/analytics`, {
+    params: {
+      boardId
+    }
+  })
+  return response.data
+}
+
 /** Columns */
 export const createNewColumnAPI = async (newColumnData: { boardId: any; title: string }) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/columns`, newColumnData)
