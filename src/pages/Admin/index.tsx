@@ -248,7 +248,7 @@ export default function DashboardPage() {
                   The number of tasks
                 </CardTitle>
                 <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
-                  Compare based on 3 criteria
+                  Evaluated according to completion rate
                 </CardDescription>
               </div>
               <Select
