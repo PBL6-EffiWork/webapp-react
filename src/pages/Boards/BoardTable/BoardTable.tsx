@@ -39,6 +39,9 @@ import { useSelector } from "react-redux"
 import { selectBoardMembersId } from "../../../redux/board/boardSlice"
 import { User } from "../../../interfaces/user"
 import BoardUserGroup from "../BoardBar/BoardUserGroup"
+import { useAppDispatch } from "../../../hooks/useAppDispatch"
+import { showModalActiveCard, updateCurrentActiveCard } from "../../../redux/activeCard/activeCardSlice"
+import { useSearchParams } from "react-router-dom"
 
 // Định nghĩa các hàm filter tùy chỉnh
 const memberFilter: FilterFn<BoardTableRow> = (row, columnId, filterValue) => {
@@ -53,95 +56,6 @@ const statusFilter: FilterFn<BoardTableRow> = (row, columnId, filterValue) => {
   return filterValue.includes(status)
 }
 
-const columns: ColumnDef<BoardTableRow>[] = [
-  {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("title")}</div>,
-    filterFn: "includesString",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("status")}</div>,
-    filterFn: statusFilter,
-  },
-  {
-    accessorKey: "members",
-    header: "Members",
-    cell: ({ row }) => {
-      const members = row.getValue("members") as User[] | undefined
-      if (!members) return null
-      return <BoardUserGroup boardUsers={members} limit={3} size={28} />
-    },
-    filterFn: memberFilter,
-  },
-  {
-    accessorKey: "startDate",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Start Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-      const startDate = row.getValue("startDate") as number | null
-      return startDate ? new Date(startDate).toLocaleDateString() : "N/A"
-    },
-  },
-  {
-    accessorKey: "dueDate",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Due Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-      const dueDate = row.getValue("dueDate") as number | null
-      return dueDate ? new Date(dueDate).toLocaleDateString() : "N/A"
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const card = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(card.id)}
-            >
-              Copy card ID
-            </DropdownMenuItem>
-            <DropdownMenuItem>View card details</DropdownMenuItem>
-            <DropdownMenuItem>Edit card</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
-]
-
 export default function CardListTable({ data, boardId }: { data: Column[], boardId: string }) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -149,6 +63,115 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
   const [rowSelection, setRowSelection] = React.useState({})
   
   const members = useSelector(selectBoardMembersId(boardId))
+  const dispatch = useAppDispatch()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const setActiveCard = (card: any) => {
+    console.log(card);
+    // Cập nhật data cho cái activeCard trong Redux
+    dispatch(updateCurrentActiveCard({
+      ...card,
+      _id: card.id,
+      boardId
+    }))
+    // Hiện Modal ActiveCard lên
+    dispatch(showModalActiveCard())
+
+    setSearchParams({ cardId: card.id })
+  }
+
+  const columns: ColumnDef<BoardTableRow>[] = [
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => <div className="capitalize">{row.getValue("title")}</div>,
+      filterFn: "includesString",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => <div className="capitalize">{row.getValue("status")}</div>,
+      filterFn: statusFilter,
+    },
+    {
+      accessorKey: "members",
+      header: "Members",
+      cell: ({ row }) => {
+        const members = row.getValue("members") as User[] | undefined
+        if (!members) return null
+        return <BoardUserGroup boardUsers={members} limit={3} size={28} />
+      },
+      filterFn: memberFilter,
+    },
+    {
+      accessorKey: "startDate",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Start Date
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const startDate = row.getValue("startDate") as number | null
+        return startDate ? new Date(startDate).toLocaleDateString() : "N/A"
+      },
+    },
+    {
+      accessorKey: "dueDate",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Due Date
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      cell: ({ row }) => {
+        const dueDate = row.getValue("dueDate") as number | null
+        return dueDate ? new Date(dueDate).toLocaleDateString() : "N/A"
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        const card = row.original
+  
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(card.id)}
+              >
+                Copy card ID
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setActiveCard(card)
+                }}
+              >View card details</DropdownMenuItem>
+              {/* <DropdownMenuItem>Edit card</DropdownMenuItem> */}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    },
+  ]
 
   // Lấy các giá trị duy nhất cho filter Status
   const statusOptions = React.useMemo(() => {
@@ -396,10 +419,10 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        </div> */}
         <div className="space-x-2">
           <Button
             variant="outline"
