@@ -18,11 +18,15 @@ import {
     Checkbox,
     ListItemText,
     OutlinedInput,
+    FormControlLabel,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import authorizedAxiosInstance from '../../utils/authorizeAxios';
 import { API_ROOT } from '../../utils/constants';
 import { toZonedTime, toDate, format } from 'date-fns-tz';
+import Typography from "@mui/material/Typography";
+import ListItem from "@mui/material/ListItem";
+import List from "@mui/material/List";
 
 const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
@@ -43,6 +47,12 @@ interface Project {
     name: string;
 }
 
+interface EventStats {
+    accept: { count: number; users: string[] };
+    reject: { count: number; users: string[] };
+    pending: { count: number; users: string[] };
+}
+
 interface MyEvent extends CalendarEvent {
     _id: string;         // MongoDB ObjectId
     event_id: string;    // UUID from backend
@@ -51,9 +61,11 @@ interface MyEvent extends CalendarEvent {
     start_time: string;
     end_time: string;
     user_ids: string[];
-    description: string;
-    event_type_id: string;
+    description?: string; // Optional
+    event_type?: string;  // Optional
     project_id: string | null; // Allows null
+    color?: string;       // Optional color field
+    stats?: EventStats;  // <-- Add stats property here
 }
 
 const locales = {
@@ -96,11 +108,13 @@ const MyCalendar: React.FC = () => {
         title: '',
         start_time: new Date().toISOString(),
         end_time: new Date().toISOString(),
-        user_ids: [],
-        description: '',
-        event_type_id: '',
+        user_ids: [], // Initialize as empty
+        event_type: '', // Optional
         project_id: null,
+        color: '#3174ad', // Default color
     });
+
+    const [selectAllUsers, setSelectAllUsers] = useState<boolean>(false);
 
     const API_BASE_URL = `${API_ROOT}/v1`;
 
@@ -114,6 +128,7 @@ const MyCalendar: React.FC = () => {
                 // Convert UTC to Zoned Time (UTC+7) for display
                 start: convertUtcToZoned(new Date(event.start_time)),
                 end: convertUtcToZoned(new Date(event.end_time)),
+                color: event.color || '#4CAF50', // Ensure color is present
             }));
             setEvents(eventsFromAPI);
         } catch (error) {
@@ -144,30 +159,21 @@ const MyCalendar: React.FC = () => {
         fetchEvents();
         fetchUsers();
         fetchProjects();
-    }, [API_BASE_URL]); // Add API_BASE_URL as a dependency if necessary
+    }, [API_BASE_URL]);
 
     const fetchProjectMembers = async (projectId: string | null) => {
         try {
             if (!projectId) {
                 setFilteredUsers(users); // Show all users if no project
-                setNewEvent(prev => ({
-                    ...prev,
-                    user_ids: users.map(user => user._id), // Select all users
-                }));
                 return;
             }
 
             const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
             const projectMembers: User[] = response.data;
             setFilteredUsers(projectMembers);
-            setNewEvent(prev => ({
-                ...prev,
-                user_ids: projectMembers.map(member => member._id), // Select project members
-            }));
         } catch (error) {
             console.error('Error fetching project members:', error);
             setFilteredUsers([]);
-            setNewEvent(prev => ({ ...prev, user_ids: [] }));
         }
     };
 
@@ -176,10 +182,6 @@ const MyCalendar: React.FC = () => {
             fetchProjectMembers(selectedEvent.project_id);
         } else {
             setFilteredUsers(users);
-            setSelectedEvent(prev => ({
-                ...prev!,
-                user_ids: users.map(user => user._id),
-            }));
         }
     }, [selectedEvent?.project_id, users]);
 
@@ -188,18 +190,20 @@ const MyCalendar: React.FC = () => {
             title: '',
             start_time: new Date().toISOString(),
             end_time: new Date().toISOString(),
-            user_ids: users.map(user => user._id), // Select all users by default
-            description: '',
-            event_type_id: '',
+            user_ids: [], // Initialize as empty
+            event_type: '', // Optional
             project_id: null,
+            color: '#3174ad', // Default color
         });
-        setFilteredUsers(users);
+        setFilteredUsers(users); // Initially show all users
+        setSelectAllUsers(false);
         setOpen(true);
     };
 
     const handleClose = () => {
         setOpen(false);
         setFilteredUsers([]);
+        setSelectAllUsers(false);
     };
 
     const handleDetailsClose = () => {
@@ -212,8 +216,6 @@ const MyCalendar: React.FC = () => {
             newEvent.title &&
             newEvent.start_time &&
             newEvent.end_time &&
-            newEvent.description &&
-            newEvent.event_type_id &&
             newEvent.user_ids?.length
         ) {
             if (new Date(newEvent.end_time) <= new Date(newEvent.start_time)) {
@@ -226,9 +228,10 @@ const MyCalendar: React.FC = () => {
                 start_time: newEvent.start_time!,
                 end_time: newEvent.end_time!,
                 user_ids: newEvent.user_ids!,
-                description: newEvent.description!,
-                event_type_id: newEvent.event_type_id!,
+                description: newEvent.description || '', // Optional
+                event_type: newEvent.event_type || '', // Optional field
                 project_id: newEvent.project_id || null,
+                color: newEvent.color || '#3174ad', // Default color if not set
             };
 
             try {
@@ -248,45 +251,58 @@ const MyCalendar: React.FC = () => {
     const handleProjectChange = async (projectId: string | null) => {
         setNewEvent({ ...newEvent, project_id: projectId });
 
+        await fetchProjectMembers(projectId);
+
         if (projectId) {
-            try {
-                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
-                const projectMembers: User[] = response.data;
-                setFilteredUsers(projectMembers);
-                setNewEvent(prev => ({
-                    ...prev,
-                    user_ids: projectMembers.map(member => member._id), // Select project members
-                }));
-            } catch (error) {
-                console.error('Error fetching project members:', error);
-                setFilteredUsers([]);
-                setNewEvent(prev => ({ ...prev, user_ids: [] }));
-            }
-        } else {
-            setFilteredUsers(users);
             setNewEvent(prev => ({
                 ...prev,
-                user_ids: users.map(user => user._id), // Select all users
+                user_ids: [], // Initialize as empty when a project is selected
             }));
+            setSelectAllUsers(false);
+        } else {
+            setNewEvent(prev => ({
+                ...prev,
+                user_ids: [], // Initialize as empty when no project is selected
+            }));
+            setSelectAllUsers(false);
         }
     };
+
+    const handleStatsClick = (type: 'accept' | 'reject' | 'pending') => {
+        setShowUserList(type);
+    };
+
+    const handleCloseUserList = () => {
+        setShowUserList(null);
+    };
+
+    const [showUserList, setShowUserList] = useState<'accept' | 'reject' | 'pending' | null>(null);
 
     const handleEventClick = async (event: MyEvent) => {
         setSelectedEvent({ ...event });
         setOpenDetails(true);
 
-        if (event.project_id) {
-            await fetchProjectMembers(event.project_id);
+        try {
+            const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/events/stats/${event.event_id}`);
+            const stats = response.data; // Assuming the stats response structure is like { accepted, rejected, pending }
             setSelectedEvent(prev => ({
                 ...prev!,
-                user_ids: filteredUsers.map(user => user._id), // Select project members
+                stats, // Store the stats in the selected event
+            }));
+        } catch (error) {
+            console.error('Error fetching event stats:', error);
+        }
+
+        if (event.user_ids && event.user_ids.length > 0) {
+            const eventUsers = users.filter(user => event.user_ids.includes(user._id));
+            setFilteredUsers(eventUsers);
+            setSelectedEvent(prev => ({
+                ...prev!,
+                user_ids: event.user_ids,
             }));
         } else {
-            setFilteredUsers(users);
-            setSelectedEvent(prev => ({
-                ...prev!,
-                user_ids: users.map(user => user._id), // Select all users
-            }));
+            setFilteredUsers([]);
+            setSelectedEvent(prev => ({ ...prev!, user_ids: [] }));
         }
     };
 
@@ -313,8 +329,6 @@ const MyCalendar: React.FC = () => {
             selectedEvent?.title &&
             selectedEvent.start_time &&
             selectedEvent.end_time &&
-            selectedEvent.description &&
-            selectedEvent.event_type_id &&
             selectedEvent.user_ids?.length
         ) {
             if (new Date(selectedEvent.end_time) <= new Date(selectedEvent.start_time)) {
@@ -327,9 +341,10 @@ const MyCalendar: React.FC = () => {
                 start_time: selectedEvent.start_time,
                 end_time: selectedEvent.end_time,
                 user_ids: selectedEvent.user_ids,
-                description: selectedEvent.description,
-                event_type_id: selectedEvent.event_type_id,
+                description: selectedEvent.description || '', // Optional
+                event_type: selectedEvent.event_type || '', // Optional field
                 project_id: selectedEvent.project_id,
+                color: selectedEvent.color || '#3174ad', // Default color if not set
             };
 
             try {
@@ -350,19 +365,54 @@ const MyCalendar: React.FC = () => {
         }
     };
 
-    const eventStyleGetter = () => ({
-        style: {
-            backgroundColor: '#4CAF50',
-            color: '#ffffff',
-            borderRadius: '8px',
-            padding: '6px',
-            fontWeight: 'bold',
-            fontSize: '0.85rem',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-        },
-    });
+    const eventStyleGetter = (event: MyEvent) => {
+        return {
+            style: {
+                backgroundColor: event.color || '#4CAF50', // Use event's color or default
+                color: '#ffffff',
+                borderRadius: '8px',
+                padding: '6px',
+                fontWeight: 'bold',
+                fontSize: '0.85rem',
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+            },
+        };
+    };
+
+    // Handler for "Select All" checkbox
+    const handleSelectAllChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = event.target.checked;
+        setSelectAllUsers(checked);
+        if (checked) {
+            setNewEvent(prev => ({
+                ...prev,
+                user_ids: filteredUsers.map(user => user._id),
+            }));
+        } else {
+            setNewEvent(prev => ({
+                ...prev,
+                user_ids: [],
+            }));
+        }
+    };
+
+    // Handler for "Select All" in Event Details
+    const handleSelectAllDetailsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = event.target.checked;
+        if (checked) {
+            setSelectedEvent(prev => ({
+                ...prev!,
+                user_ids: filteredUsers.map(user => user._id),
+            }));
+        } else {
+            setSelectedEvent(prev => ({
+                ...prev!,
+                user_ids: [],
+            }));
+        }
+    };
 
     return (
         <Box sx={{ padding: '20px', backgroundColor: '#f9f9f9', height: '100vh', boxSizing: 'border-box' }}>
@@ -418,7 +468,7 @@ const MyCalendar: React.FC = () => {
                         rows={4}
                         value={newEvent.description || ''}
                         onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                        required
+                        // Removed `required` attribute
                     />
                     <TextField
                         margin="dense"
@@ -454,17 +504,16 @@ const MyCalendar: React.FC = () => {
                         }}
                         required
                     />
-                    <FormControl fullWidth margin="dense" variant="outlined" required>
-                        <InputLabel>Event Type</InputLabel>
-                        <Select
-                            value={newEvent.event_type_id || ''}
-                            onChange={(e) => setNewEvent({ ...newEvent, event_type_id: e.target.value })}
+                    <FormControl fullWidth margin="dense">
+                        <TextField
                             label="Event Type"
-                        >
-                            <MenuItem value="1">Meeting</MenuItem>
-                            <MenuItem value="2">Deadline</MenuItem>
-                            <MenuItem value="3">Presentation</MenuItem>
-                        </Select>
+                            type="text"
+                            fullWidth
+                            variant="outlined"
+                            value={newEvent.event_type || ''}
+                            onChange={(e) => setNewEvent({ ...newEvent, event_type: e.target.value })}
+                            placeholder="e.g., Meeting, Deadline, etc. (Optional)"
+                        />
                     </FormControl>
                     <FormControl fullWidth margin="dense">
                         <InputLabel>Project</InputLabel>
@@ -483,21 +532,30 @@ const MyCalendar: React.FC = () => {
                             ))}
                         </Select>
                     </FormControl>
-                    <FormControl fullWidth margin="dense" required>
+                    {/* Separate "Select All" Checkbox */}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={selectAllUsers}
+                                onChange={handleSelectAllChange}
+                                color="primary"
+                            />
+                        }
+                        label="Select All Users"
+                        sx={{ marginTop: 2 }}
+                    />
+                    <FormControl fullWidth margin="dense">
                         <InputLabel>Users</InputLabel>
                         <Select
                             multiple
                             value={newEvent.user_ids || []}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                if (value.includes('select-all')) {
-                                    if ((newEvent.user_ids || []).length === filteredUsers.length) {
-                                        setNewEvent({ ...newEvent, user_ids: [] });
-                                    } else {
-                                        setNewEvent({ ...newEvent, user_ids: filteredUsers.map(user => user._id) });
-                                    }
+                                if (typeof value === 'string') {
+                                    // This case won't occur since "Select All" is handled separately
                                 } else {
                                     setNewEvent({ ...newEvent, user_ids: value as string[] });
+                                    setSelectAllUsers((value as string[]).length === filteredUsers.length);
                                 }
                             }}
                             input={<OutlinedInput label="Users" />}
@@ -506,26 +564,6 @@ const MyCalendar: React.FC = () => {
                                 return selectedUsers.map((user) => user.username).join(', ');
                             }}
                         >
-                            {/* Select All Option */}
-                            <MenuItem
-                                value="select-all"
-                                onClick={(e) => {
-                                    e.stopPropagation(); // Ngăn sự kiện được truyền lên Select
-                                    if ((newEvent.user_ids || []).length === filteredUsers.length) {
-                                        // Bỏ chọn tất cả
-                                        setNewEvent({ ...newEvent, user_ids: [] });
-                                    } else {
-                                        // Chọn tất cả
-                                        setNewEvent({ ...newEvent, user_ids: filteredUsers.map(user => user._id) });
-                                    }
-                                }}
-                            >
-                                <Checkbox
-                                    checked={(newEvent.user_ids || []).length === filteredUsers.length}
-                                    indeterminate={(newEvent.user_ids || []).length > 0 && (newEvent.user_ids || []).length < filteredUsers.length}
-                                />
-                                <ListItemText primary="Select All" />
-                            </MenuItem>
                             {filteredUsers.map((user) => (
                                 <MenuItem key={user._id} value={user._id}>
                                     <Checkbox checked={(newEvent.user_ids || []).includes(user._id)} />
@@ -533,6 +571,25 @@ const MyCalendar: React.FC = () => {
                                 </MenuItem>
                             ))}
                         </Select>
+                    </FormControl>
+                    {/* Adjusted Color Picker */}
+                    <FormControl margin="dense">
+                        <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+                            <InputLabel shrink>Event Color</InputLabel>
+                            <input
+                                type="color"
+                                value={newEvent.color || '#3174ad'} // Default color
+                                onChange={(e) => setNewEvent({ ...newEvent, color: e.target.value })}
+                                style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    border: 'none',
+                                    padding: '0',
+                                    marginLeft: '10px',
+                                    cursor: 'pointer',
+                                }}
+                            />
+                        </Box>
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
@@ -568,9 +625,9 @@ const MyCalendar: React.FC = () => {
                                 variant="outlined"
                                 multiline
                                 rows={4}
-                                value={selectedEvent.description}
+                                value={selectedEvent.description || ''}
                                 onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
-                                required
+                                // Removed `required` attribute
                             />
                             <TextField
                                 margin="dense"
@@ -582,7 +639,11 @@ const MyCalendar: React.FC = () => {
                                 onChange={(e) => {
                                     // Convert from Zoned Time to UTC
                                     const newStart = convertZonedToUtc(e.target.value);
-                                    setSelectedEvent({ ...selectedEvent, start_time: newStart.toISOString(), start: convertUtcToZoned(newStart) });
+                                    setSelectedEvent({
+                                        ...selectedEvent,
+                                        start_time: newStart.toISOString(),
+                                        start: convertUtcToZoned(newStart)
+                                    });
                                 }}
                                 InputLabelProps={{
                                     shrink: true,
@@ -599,24 +660,27 @@ const MyCalendar: React.FC = () => {
                                 onChange={(e) => {
                                     // Convert from Zoned Time to UTC
                                     const newEnd = convertZonedToUtc(e.target.value);
-                                    setSelectedEvent({ ...selectedEvent, end_time: newEnd.toISOString(), end: convertUtcToZoned(newEnd) });
+                                    setSelectedEvent({
+                                        ...selectedEvent,
+                                        end_time: newEnd.toISOString(),
+                                        end: convertUtcToZoned(newEnd)
+                                    });
                                 }}
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
                                 required
                             />
-                            <FormControl fullWidth margin="dense" variant="outlined" required>
-                                <InputLabel>Event Type</InputLabel>
-                                <Select
-                                    value={selectedEvent.event_type_id}
-                                    onChange={(e) => setSelectedEvent({ ...selectedEvent, event_type_id: e.target.value })}
+                            <FormControl fullWidth margin="dense">
+                                <TextField
                                     label="Event Type"
-                                >
-                                    <MenuItem value="1">Meeting</MenuItem>
-                                    <MenuItem value="2">Deadline</MenuItem>
-                                    <MenuItem value="3">Presentation</MenuItem>
-                                </Select>
+                                    type="text"
+                                    fullWidth
+                                    variant="outlined"
+                                    value={selectedEvent.event_type || ''}
+                                    onChange={(e) => setSelectedEvent({ ...selectedEvent, event_type: e.target.value })}
+                                    placeholder="e.g., Meeting, Deadline, etc. (Optional)"
+                                />
                             </FormControl>
                             <FormControl fullWidth margin="dense">
                                 <InputLabel>Project</InputLabel>
@@ -635,19 +699,27 @@ const MyCalendar: React.FC = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                            <FormControl fullWidth margin="dense" required>
+                            {/* Separate "Select All" Checkbox for Details */}
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={selectedEvent.user_ids.length === filteredUsers.length && filteredUsers.length > 0}
+                                        onChange={handleSelectAllDetailsChange}
+                                        color="primary"
+                                    />
+                                }
+                                label="Select All Users"
+                                sx={{ marginTop: 2 }}
+                            />
+                            <FormControl fullWidth margin="dense">
                                 <InputLabel>Users</InputLabel>
                                 <Select
                                     multiple
                                     value={selectedEvent?.user_ids || []}
                                     onChange={(e) => {
                                         const value = e.target.value;
-                                        if (value.includes('select-all')) {
-                                            if ((selectedEvent?.user_ids || []).length === filteredUsers.length) {
-                                                setSelectedEvent({ ...selectedEvent!, user_ids: [] });
-                                            } else {
-                                                setSelectedEvent({ ...selectedEvent!, user_ids: filteredUsers.map(user => user._id) });
-                                            }
+                                        if (typeof value === 'string') {
+                                            // This case won't occur since "Select All" is handled separately
                                         } else {
                                             setSelectedEvent({ ...selectedEvent!, user_ids: value as string[] });
                                         }
@@ -658,26 +730,6 @@ const MyCalendar: React.FC = () => {
                                         return selectedUsers.map((user) => user.username).join(', ');
                                     }}
                                 >
-                                    {/* Select All Option */}
-                                    <MenuItem
-                                        value="select-all"
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // Ngăn sự kiện được truyền lên Select
-                                            if ((selectedEvent?.user_ids || []).length === filteredUsers.length) {
-                                                // Bỏ chọn tất cả
-                                                setSelectedEvent({ ...selectedEvent!, user_ids: [] });
-                                            } else {
-                                                // Chọn tất cả
-                                                setSelectedEvent({ ...selectedEvent!, user_ids: filteredUsers.map(user => user._id) });
-                                            }
-                                        }}
-                                    >
-                                        <Checkbox
-                                            checked={(selectedEvent?.user_ids || []).length === filteredUsers.length}
-                                            indeterminate={(selectedEvent?.user_ids || []).length > 0 && (selectedEvent?.user_ids || []).length < filteredUsers.length}
-                                        />
-                                        <ListItemText primary="Select All" />
-                                    </MenuItem>
                                     {filteredUsers.map((user) => (
                                         <MenuItem key={user._id} value={user._id}>
                                             <Checkbox checked={(selectedEvent?.user_ids || []).includes(user._id)} />
@@ -686,8 +738,44 @@ const MyCalendar: React.FC = () => {
                                     ))}
                                 </Select>
                             </FormControl>
+                            {/* Adjusted Color Picker */}
+                            <FormControl margin="dense">
+                                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+                                    <InputLabel shrink>Event Color</InputLabel>
+                                    <input
+                                        type="color"
+                                        value={selectedEvent.color || '#3174ad'} // Default color
+                                        onChange={(e) => setSelectedEvent({ ...selectedEvent, color: e.target.value })}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            border: 'none',
+                                            padding: '0',
+                                            marginLeft: '10px',
+                                            cursor: 'pointer',
+                                        }}
+                                    />
+                                </Box>
+                            </FormControl>
+                            {selectedEvent.stats && (
+                                <Box sx={{ marginTop: 2 }}>
+                                    <Typography variant="h6">Event Stats</Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <Button onClick={() => handleStatsClick('accept')}>
+                                            Accepted: {selectedEvent.stats.accept.count}
+                                        </Button>
+                                        <Button onClick={() => handleStatsClick('reject')}>
+                                            Rejected: {selectedEvent.stats.reject.count}
+                                        </Button>
+                                        <Button onClick={() => handleStatsClick('pending')}>
+                                            Pending: {selectedEvent.stats.pending.count}
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            )}
                         </>
                     )}
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleDetailsClose} color="secondary">
@@ -700,6 +788,23 @@ const MyCalendar: React.FC = () => {
                         Delete
                     </Button>
                 </DialogActions>
+                <Dialog open={showUserList !== null} onClose={handleCloseUserList}>
+                    <DialogTitle>
+                        {showUserList && `${showUserList.charAt(0).toUpperCase() + showUserList.slice(1)} Users`}
+                    </DialogTitle>
+                    <DialogContent>
+                        <List>
+                            {selectedEvent?.stats && showUserList && selectedEvent.stats[showUserList].users.map((username, index) => (
+                                <ListItem key={index}>{username}</ListItem>
+                            ))}
+                        </List>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseUserList} color="primary">
+                            Close
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Dialog>
         </Box>
     );
