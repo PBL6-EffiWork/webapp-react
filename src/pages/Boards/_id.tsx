@@ -70,7 +70,6 @@ function Board() {
 
   useEffect(() => {
 
-    console.log(ability);
     // Call API
     if (!boardId) {
       return;
@@ -150,7 +149,6 @@ function Board() {
   }, [board])
 
   if (!board) {
-    console.log('Board is null', board);
     return <PageLoadingSpinner caption="Loading Board..." />
   }
 

@@ -27,7 +27,11 @@ export const RoleProvider = ({ children, initialRole }: { children: ReactNode, i
 export const useRole = () => {
   const context = useContext(RoleContext);
   if (!context) {
-    throw new Error('useRole must be used within a RoleProvider');
+    return {
+      role: 'client',
+      ability: createMongoAbility<MongoAbility>([]),
+      setRole: () => {}
+    }
   }
   return context;
 };

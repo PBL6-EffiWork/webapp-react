@@ -21,7 +21,6 @@ function BoardUserGroup({ boardUsers = [], limit = 6, size = 34, boardId }: Boar
    */
   const [isOpenMembers, setIsOpenMembers] = useState(false)
   const handleToggleMembers = (isOpen?: boolean) => {
-    console.log('isOpen', isOpen)
     setIsOpenMembers(!isOpenMembers)
   }
 

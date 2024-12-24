@@ -69,8 +69,6 @@ export default function DashboardPage() {
         totalCards: number;
       }) => ({ name: title, value: totalCards }));
 
-      console.log(charData);
-
       setChartData(charData);
     } catch (error) {
       console.error(error);

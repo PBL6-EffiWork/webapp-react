@@ -6,7 +6,7 @@ import Board from './pages/Boards/_id'
 import NotFound from './pages/404/NotFound'
 import Auth from './pages/Auth/Auth'
 import AccountVerification from './pages/Auth/AccountVerification'
-import { selectCurrentUser } from './redux/user/userSlice'
+import { loadInfoThunk, selectCurrentUser } from './redux/user/userSlice'
 import Settings from './pages/Settings/Settings'
 import Boards from './pages/Boards'
 import AppBar from './components/AppBar/AppBar'
@@ -18,10 +18,11 @@ import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 
 import MyCalendar from './pages/Calendar/Calendar';
-import { Can, RoleProvider } from './context/RoleContext'
+import { Can, RoleProvider, useRole } from './context/RoleContext'
 import { useTranslation } from 'react-i18next'
 import AdminUsers from './pages/Admin/User'
 import UserDetailPage from './pages/Users'
+import { useAppDispatch } from './hooks/useAppDispatch'
 
 // Styled components for layout
 const MainLayout = styled('div')({
@@ -61,10 +62,16 @@ const ProtectedRoute = ({ user }) => {
 function App() {
   const currentUser = useSelector(selectCurrentUser)
   const { t, i18n } = useTranslation();
+  const dispatch = useAppDispatch()
+  const { setRole } = useRole()
 
   useEffect(() => {
     i18n.changeLanguage(localStorage.getItem('i18nextLng') || 'en');
   }, []);
+
+  useEffect(() => {
+    dispatch(loadInfoThunk())
+  }, [])
 
   return (
     <RoleProvider initialRole={currentUser?.role || 'client'}>

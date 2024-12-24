@@ -21,7 +21,7 @@ import { logoutUserAPI, selectCurrentUser } from "../../redux/user/userSlice"
 import { Button } from "../ui/button"
 import { Box, Typography } from "@mui/material"
 import { useTranslation } from "react-i18next"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useRole } from "../../context/RoleContext"
 import { useSelector } from "react-redux"
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar"
@@ -66,6 +66,7 @@ export function AppSidebar() {
   const dispatch = useAppDispatch()
   const confirmLogout = useConfirm()
   const currentUser = useSelector(selectCurrentUser)
+  const { setRole } = useRole()
   const handleLogout = () => {
     confirmLogout({
       title: 'Log out of your account?',
@@ -82,6 +83,13 @@ export function AppSidebar() {
     ...item,
     title: t(`${item.title}`)
   })), [t])
+
+  useEffect(() => {
+    if (currentUser) {
+      console.log(currentUser);
+      setRole(currentUser.role)
+    }
+  }, [currentUser])
 
   return (
     <Sidebar>

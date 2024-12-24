@@ -158,6 +158,11 @@ export const sendReminderAPI = async (memberId: string, boardId: string) => {
   return response.data
 }
 
+export const loadInfoUserAPI = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/users/info`)
+  return response.data
+}
+
 /** Boards */
 
 export const getBoardsAPIAdmin = async () => {

@@ -413,7 +413,6 @@ export default function UserDetailPage() {
                       <ListItem alignItems="flex-start" className="flex-col items-start">
                         <Box className="flex items-center w-full">
                           <ListItemAvatar>
-                            {/* <Avatar alt={history.actor.displayName} src={history.actor.avatar} /> */}
                             <Avatar className="w-10 h-10">
                               <AvatarImage src={history.actor.avatar} alt={history.actor.displayName} />
                               <AvatarFallback>{history.actor.displayName.charAt(0)}</AvatarFallback>

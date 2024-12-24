@@ -34,7 +34,6 @@ export function DatePicker({
   const handleChangeDate = React.useCallback((date: any) => {
     if (onDateChange) {
       // convert date sang milisecond
-      console.log('date in date picker', date);
       if (
         date?.from && date?.to && 
         selectedDate?.from && selectedDate?.to &&

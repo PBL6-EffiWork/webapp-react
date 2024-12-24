@@ -67,7 +67,6 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
   const [searchParams, setSearchParams] = useSearchParams()
 
   const setActiveCard = (card: any) => {
-    console.log(card);
     // Cập nhật data cho cái activeCard trong Redux
     dispatch(updateCurrentActiveCard({
       ...card,

@@ -98,7 +98,6 @@ export const loadAllMembersThunk = createAsyncThunk(
   'board/loadAllMembers',
   async () => {
     const response = await getUsersAPI()
-    console.log(response)
     return {members: response}
   }
 )
