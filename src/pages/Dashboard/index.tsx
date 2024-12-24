@@ -133,7 +133,7 @@ function Dashboard({id}: {id: string}) {
               {/* <p className="text-xs text-muted-foreground">+180.1% so với tháng trước</p> */}
             </CardContent>
           </Card>
-          <Card>
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Events</CardTitle>
               <svg
@@ -152,10 +152,9 @@ function Dashboard({id}: {id: string}) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.events}</div>
-              {/* <p className="text-xs text-muted-foreground">+19% so với tháng trước</p> */}
             </CardContent>
-          </Card>
-          <Card>
+          </Card> */}
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Inbox</CardTitle>
               <svg
@@ -173,9 +172,8 @@ function Dashboard({id}: {id: string}) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+573</div>
-              {/* <p className="text-xs text-muted-foreground">+201 từ giờ trước</p> */}
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         <div className="grid gap-6 md:grid-cols-1">
