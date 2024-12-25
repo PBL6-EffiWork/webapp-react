@@ -42,6 +42,7 @@ import BoardUserGroup from "../BoardBar/BoardUserGroup"
 import { useAppDispatch } from "../../../hooks/useAppDispatch"
 import { showModalActiveCard, updateCurrentActiveCard } from "../../../redux/activeCard/activeCardSlice"
 import { useSearchParams } from "react-router-dom"
+import { selectCurrentUser } from "../../../redux/user/userSlice"
 
 // Định nghĩa các hàm filter tùy chỉnh
 const memberFilter: FilterFn<BoardTableRow> = (row, columnId, filterValue) => {
@@ -63,6 +64,7 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
   const [rowSelection, setRowSelection] = React.useState({})
   
   const members = useSelector(selectBoardMembersId(boardId))
+  const currentUser = useSelector(selectCurrentUser);
   const dispatch = useAppDispatch()
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -200,7 +202,14 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
 
   const tableData: BoardTableRow[] = React.useMemo(() => {
     return data.flatMap((column) =>
-      column.cards.map((card) => ({
+      column.cards.filter((card) => {
+        if (currentUser.role === "client") {
+          console.log(card);
+          return (card.memberIds || []).includes(currentUser._id)
+        }
+
+        return true
+      }).map((card) => ({
         id: card._id,
         title: card.title,
         status: column.title,
@@ -287,6 +296,15 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
     setColumnFilters(newFilters)
   }, [activeFilters])
 
+  React.useEffect(() => {
+    if (currentUser.role === "client") {
+      setActiveFilters(prev => ({
+        ...prev,
+        members: [currentUser._id]
+      }))
+    }
+  }, [currentUser])
+
   return (
     <div className="w-full">
       <div className="flex flex-wrap items-center justify-between py-4 space-x-4">
@@ -330,6 +348,7 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
                           type="checkbox"
                           checked={activeFilters.members.includes(member.id)}
                           onChange={(e) => handleFilterChange("members", member.id, e.target.checked)}
+                          disabled={currentUser.role === "client"}
                         />
                         <span>{member.name}</span>
                       </label>
@@ -342,7 +361,14 @@ export default function CardListTable({ data, boardId }: { data: Column[], board
 
           {/* Nút Clear All Filters */}
           {(activeFilters.status.length > 0 || activeFilters.members.length > 0) && (
-            <Button variant="ghost" onClick={() => setActiveFilters({ status: [], members: [] })}>
+            <Button variant="ghost" onClick={() => {
+              const newFilters = {
+                status: [],
+                members: currentUser.role === "client" ? [currentUser._id] : [],
+              }
+
+              setActiveFilters(newFilters)
+            }}>
               Clear All Filters
             </Button>
           )}
