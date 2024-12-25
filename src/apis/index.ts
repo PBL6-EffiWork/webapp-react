@@ -175,8 +175,8 @@ export const fetchBoardsAPI = async (searchPath: string) => {
   return response.data
 }
 
-export const createSampleBoardAPI = async () => {
-  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/boards/sample`)
+export const createSampleBoardAPI = async (prompt?: string) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/boards/sample`, { prompt })
   return response.data
 }
 
