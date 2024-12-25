@@ -239,7 +239,7 @@ function Dashboard({id}: {id: string}) {
                   setSelectBoard(value);
                 }}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[300px]">
                   <SelectValue placeholder="Board" />
                 </SelectTrigger>
                 <SelectContent>
