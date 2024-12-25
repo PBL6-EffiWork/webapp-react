@@ -56,6 +56,11 @@ export const analyticsColumnsAPI = async (boardId: string) => {
   return response.data
 }
 
+export const fetchDetailsBoardAPI = async (boardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/boards/${boardId}`)
+  return response.data
+}
+
 /** Columns */
 export const createNewColumnAPI = async (newColumnData: { boardId: any; title: string }) => {
   const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/columns`, newColumnData)
@@ -90,6 +95,15 @@ export const getCardStatusOfBoardAPI = async (boardId: string) => {
 
 export const getUpcomingTaskAPI = async (memberId: string) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/upcoming/${memberId}`)
+  return response.data
+}
+
+export const analyticsCardAPI = async (boardId: string) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/v1/cards/analytics`, {
+    params: {
+      boardId
+    }
+  })
   return response.data
 }
 
