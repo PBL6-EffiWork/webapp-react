@@ -38,11 +38,11 @@ const items = [
     url: "/boards",
     icon: FolderKanban,
   },
-  {
-    title: "inbox",
-    url: "#",
-    icon: Inbox,
-  },
+  // {
+  //   title: "inbox",
+  //   url: "#",
+  //   icon: Inbox,
+  // },
   {
     title: "calendar",
     url: "/calendar",
