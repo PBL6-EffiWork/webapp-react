@@ -19,6 +19,8 @@ import {
     ListItemText,
     OutlinedInput,
     FormControlLabel,
+    Grid,
+    Paper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import authorizedAxiosInstance from '../../utils/authorizeAxios';
@@ -27,6 +29,42 @@ import { toZonedTime, toDate, format } from 'date-fns-tz';
 import Typography from "@mui/material/Typography";
 import ListItem from "@mui/material/ListItem";
 import List from "@mui/material/List";
+
+const useCalendarData = (API_BASE_URL: string) => {
+    const [events, setEvents] = useState<MyEvent[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [eventsResponse, usersResponse, projectsResponse] = await Promise.all([
+                    authorizedAxiosInstance.get(`${API_BASE_URL}/events`),
+                    authorizedAxiosInstance.get(`${API_BASE_URL}/users/active`),
+                    authorizedAxiosInstance.get(`${API_BASE_URL}/boards`)
+                ]);
+
+                const eventsFromAPI = eventsResponse.data.map((event: any) => ({
+                    ...event,
+                    id: event.event_id,
+                    start: convertUtcToZoned(new Date(event.start_time)),
+                    end: convertUtcToZoned(new Date(event.end_time)),
+                    color: event.color || '#4CAF50',
+                }));
+
+                setEvents(eventsFromAPI);
+                setUsers(usersResponse.data);
+                setProjects(projectsResponse.data.boards.map((board: any) => ({ id: board._id, name: board.title })));
+            } catch (error) {
+                console.error('Error fetching calendar data:', error);
+            }
+        };
+
+        fetchData();
+    }, [API_BASE_URL]);
+
+    return { events, users, projects };
+};
 
 const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
@@ -96,10 +134,6 @@ const StyledButton = styled(Button)(({ theme }) => ({
 }));
 
 const MyCalendar: React.FC = () => {
-    const [events, setEvents] = useState<MyEvent[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
-    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-    const [projects, setProjects] = useState<Project[]>([]);
     const [open, setOpen] = useState<boolean>(false);
     const [openDetails, setOpenDetails] = useState<boolean>(false);
     const [selectedEvent, setSelectedEvent] = useState<MyEvent | null>(null);
@@ -118,72 +152,8 @@ const MyCalendar: React.FC = () => {
 
     const API_BASE_URL = `${API_ROOT}/v1`;
 
-    // Fetch events
-    const fetchEvents = async () => {
-        try {
-            const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/events`);
-            const eventsFromAPI = response.data.map((event: any) => ({
-                ...event,
-                id: event.event_id,
-                // Convert UTC to Zoned Time (UTC+7) for display
-                start: convertUtcToZoned(new Date(event.start_time)),
-                end: convertUtcToZoned(new Date(event.end_time)),
-                color: event.color || '#4CAF50', // Ensure color is present
-            }));
-            setEvents(eventsFromAPI);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        }
-    };
+    const { events, users, projects } = useCalendarData(API_BASE_URL);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/users/active`);
-                setUsers(response.data);
-                setFilteredUsers(response.data); // Initialize filteredUsers
-            } catch (error) {
-                console.error('Error fetching users:', error);
-            }
-        };
-
-        const fetchProjects = async () => {
-            try {
-                const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards`);
-                setProjects(response.data.boards.map((board: any) => ({ id: board._id, name: board.title })));
-            } catch (error) {
-                console.error('Error fetching projects:', error);
-            }
-        };
-
-        fetchEvents();
-        fetchUsers();
-        fetchProjects();
-    }, [API_BASE_URL]);
-
-    const fetchProjectMembers = async (projectId: string | null) => {
-        try {
-            if (!projectId) {
-                setFilteredUsers(users); // Show all users if no project
-                return;
-            }
-
-            const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
-            const projectMembers: User[] = response.data;
-            setFilteredUsers(projectMembers);
-        } catch (error) {
-            console.error('Error fetching project members:', error);
-            setFilteredUsers([]);
-        }
-    };
-
-    useEffect(() => {
-        if (selectedEvent?.project_id) {
-            fetchProjectMembers(selectedEvent.project_id);
-        } else {
-            setFilteredUsers(users);
-        }
-    }, [selectedEvent?.project_id, users]);
 
     const handleOpen = () => {
         setNewEvent({
@@ -237,7 +207,7 @@ const MyCalendar: React.FC = () => {
             try {
                 await authorizedAxiosInstance.post(`${API_BASE_URL}/events`, eventToAdd);
                 // After successful addition, fetch the latest events
-                await fetchEvents();
+                //await fetchEvents(); // Removed - handled by useCalendarData
                 setOpen(false);
             } catch (error: any) {
                 console.error('Failed to save event:', error);
@@ -277,6 +247,7 @@ const MyCalendar: React.FC = () => {
     };
 
     const [showUserList, setShowUserList] = useState<'accept' | 'reject' | 'pending' | null>(null);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
     const handleEventClick = async (event: MyEvent) => {
         setSelectedEvent({ ...event });
@@ -314,7 +285,7 @@ const MyCalendar: React.FC = () => {
             try {
                 await authorizedAxiosInstance.delete(`${API_BASE_URL}/events/${selectedEvent.event_id}`);
                 // After successful deletion, fetch the latest events
-                await fetchEvents();
+                //await fetchEvents(); // Removed - handled by useCalendarData
                 setOpenDetails(false);
                 setSelectedEvent(null);
             } catch (error: any) {
@@ -353,7 +324,7 @@ const MyCalendar: React.FC = () => {
                     updatedEvent
                 );
                 // After successful update, fetch the latest events
-                await fetchEvents();
+                //await fetchEvents(); // Removed - handled by useCalendarData
                 setOpenDetails(false);
                 alert('Event updated successfully');
             } catch (error: any) {
@@ -413,6 +384,30 @@ const MyCalendar: React.FC = () => {
             }));
         }
     };
+
+    const fetchProjectMembers = async (projectId: string | null) => {
+        try {
+            if (!projectId) {
+                setFilteredUsers(users); // Show all users if no project
+                return;
+            }
+
+            const response = await authorizedAxiosInstance.get(`${API_BASE_URL}/boards/${projectId}/members`);
+            const projectMembers: User[] = response.data;
+            setFilteredUsers(projectMembers);
+        } catch (error) {
+            console.error('Error fetching project members:', error);
+            setFilteredUsers([]);
+        }
+    };
+
+    useEffect(() => {
+        if (selectedEvent?.project_id) {
+            fetchProjectMembers(selectedEvent.project_id);
+        } else {
+            setFilteredUsers(users);
+        }
+    }, [selectedEvent?.project_id, users]);
 
     return (
         <Box sx={{ padding: '20px', backgroundColor: '#f9f9f9', height: '100vh', boxSizing: 'border-box' }}>
@@ -758,19 +753,58 @@ const MyCalendar: React.FC = () => {
                                 </Box>
                             </FormControl>
                             {selectedEvent.stats && (
-                                <Box sx={{ marginTop: 2 }}>
-                                    <Typography variant="h6">Event Stats</Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Button onClick={() => handleStatsClick('accept')}>
-                                            Accepted: {selectedEvent.stats.accept.count}
-                                        </Button>
-                                        <Button onClick={() => handleStatsClick('reject')}>
-                                            Rejected: {selectedEvent.stats.reject.count}
-                                        </Button>
-                                        <Button onClick={() => handleStatsClick('pending')}>
-                                            Pending: {selectedEvent.stats.pending.count}
-                                        </Button>
-                                    </Box>
+                                <Box sx={{ marginTop: 3, backgroundColor: '#f5f5f5', borderRadius: '8px', padding: '16px' }}>
+                                    <Typography variant="h6" sx={{ marginBottom: 2, fontWeight: 'bold' }}>Event Stats</Typography>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={4}>
+                                            <Paper
+                                                elevation={3}
+                                                sx={{
+                                                    padding: '16px',
+                                                    textAlign: 'center',
+                                                    backgroundColor: '#e8f5e9',
+                                                    cursor: 'pointer',
+                                                    '&:hover': { backgroundColor: '#c8e6c9' }
+                                                }}
+                                                onClick={() => handleStatsClick('accept')}
+                                            >
+                                                <Typography variant="h4" color="success.main">{selectedEvent.stats.accept.count}</Typography>
+                                                <Typography variant="subtitle1" color="success.dark">Accepted</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Paper
+                                                elevation={3}
+                                                sx={{
+                                                    padding: '16px',
+                                                    textAlign: 'center',
+                                                    backgroundColor: '#fff3e0',
+                                                    cursor: 'pointer',
+                                                    '&:hover': { backgroundColor: '#ffe0b2' }
+                                                }}
+                                                onClick={() => handleStatsClick('pending')}
+                                            >
+                                                <Typography variant="h4" color="warning.main">{selectedEvent.stats.pending.count}</Typography>
+                                                <Typography variant="subtitle1" color="warning.dark">Pending</Typography>
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Paper
+                                                elevation={3}
+                                                sx={{
+                                                    padding: '16px',
+                                                    textAlign: 'center',
+                                                    backgroundColor: '#ffebee',
+                                                    cursor: 'pointer',
+                                                    '&:hover': { backgroundColor: '#ffcdd2' }
+                                                }}
+                                                onClick={() => handleStatsClick('reject')}
+                                            >
+                                                <Typography variant="h4" color="error.main">{selectedEvent.stats.reject.count}</Typography>
+                                                <Typography variant="subtitle1" color="error.dark">Rejected</Typography>
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
                                 </Box>
                             )}
                         </>
@@ -811,3 +845,4 @@ const MyCalendar: React.FC = () => {
 };
 
 export default MyCalendar;
+
