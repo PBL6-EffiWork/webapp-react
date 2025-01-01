@@ -243,10 +243,10 @@ function ActiveCard() {
                 <Label htmlFor='isDone'>Status</Label>
                 <Switch 
                   id='isDone'
-                  checked={activeCard?.columnId ? status[activeCard.columnId] : false}
+                  checked={activeCard?.columnId ? status?.[activeCard.columnId] : false}
                   onCheckedChange={() => {
                     if (activeCard?.columnId) {
-                      callApiUpdateCardStatus(!status[activeCard.columnId])
+                      callApiUpdateCardStatus(!status?.[activeCard.columnId])
                     }
                   }}
                 />
@@ -254,7 +254,7 @@ function ActiveCard() {
                 <SelectColumn 
                   cardId={activeCard?._id} 
                   currentColumnId={activeCard?.columnId}
-                  isShow={activeCard?.columnId ? status[activeCard?.columnId ?? ''] : false}
+                  isShow={activeCard?.columnId ? status?.[activeCard?.columnId ?? ''] : false}
                 />
               </div>
             </Box>
