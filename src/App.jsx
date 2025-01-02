@@ -89,7 +89,7 @@ function App() {
             <Routes>
               {/* Redirect Route */}
               <Route path='/' element={
-                <Navigate to="/boards" replace={true} />
+                <Navigate to="/dashboard" replace={true} />
               } />
 
                 {/* Protected Routes */}

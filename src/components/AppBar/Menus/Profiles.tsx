@@ -76,7 +76,7 @@ function Profiles() {
           </MenuItem>
         </Link>
         <Divider />
-        <MenuItem>
+        {/* <MenuItem>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
@@ -87,7 +87,7 @@ function Profiles() {
             <Settings fontSize="small" />
           </ListItemIcon>
           Settings
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem onClick={handleLogout} sx={{
           '&:hover': {
