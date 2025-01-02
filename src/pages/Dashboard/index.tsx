@@ -32,7 +32,7 @@ function Dashboard({id}: {id: string}) {
   });
 
   const [boards, setBoards] = useState<any>([]);
-  const [selectBoard, setSelectBoard] = useState('');
+  const [selectBoard, setSelectBoard] = useState('all');
   const [cards, setCards] = useState<CardType[]>([]);
 
   useEffect(() => {
