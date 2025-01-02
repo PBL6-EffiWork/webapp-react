@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts"
 
 import { countBoard, countCard, countUser, top5Cards, countEvent, fetchBoardsAPI, analyticsCardAPI } from '../../apis/index';
 import { Card as CardType } from '../../interfaces/card';
@@ -34,7 +33,7 @@ function Dashboard({id}: {id: string}) {
 
   const [boards, setBoards] = useState<any>([]);
   const [selectBoard, setSelectBoard] = useState('');
-  const [cards, setCards] = useState([]);
+  const [cards, setCards] = useState<CardType[]>([]);
 
   useEffect(() => {
       const fetchData = async () => {
@@ -109,7 +108,12 @@ function Dashboard({id}: {id: string}) {
     const getCardsBoard = async () => {
       try {
         const res = await analyticsCardAPI(selectBoard);
-        setCards(res);
+        const sortedCards = [...res].sort((a, b) => {
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        });
+        setCards(sortedCards);
       } catch (error) {
         console.error('Error fetching boards:', error);
       }
